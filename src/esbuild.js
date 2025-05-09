@@ -5,10 +5,6 @@ const path = require("path")
 const production = process.argv.includes("--production")
 const watch = process.argv.includes("--watch")
 
-const ROOT_DIR_RELATIVE = "../dist"
-const ROOT_DIR = path.join(__dirname, ROOT_DIR_RELATIVE)
-const DIST_DIR = path.join(ROOT_DIR, "dist")
-
 /**
  * @type {import('esbuild').Plugin}
  */
@@ -33,7 +29,7 @@ const copyWasmFiles = {
 	setup(build) {
 		build.onEnd(() => {
 			const nodeModulesDir = path.join(__dirname, "node_modules")
-			const distDir = DIST_DIR
+			const distDir = path.join(__dirname, "dist")
 
 			fs.mkdirSync(distDir, { recursive: true })
 
@@ -74,7 +70,7 @@ const copyWasmFiles = {
 
 function copyLocaleFiles() {
 	const srcDir = path.join(__dirname, "i18n", "locales")
-	const destDir = path.join(DIST_DIR, "i18n", "locales")
+	const destDir = path.join(path.join(__dirname, "dist"), "i18n", "locales")
 
 	if (!fs.existsSync(srcDir)) {
 		throw new Error(`Directory does not exist: ${srcDir}`)
@@ -154,91 +150,6 @@ const copyLocalesFiles = {
 }
 
 /**
- * @type {import('esbuild').Plugin}
- */
-const copyAssets = {
-	name: "copy-assets",
-	setup(build) {
-		build.onEnd(() => {
-			const copyPaths = [
-				["assets/icons", "assets/icons"],
-				["assets/images", "assets/images"],
-				["integrations/theme/default-themes", "src/integrations/theme/default-themes"],
-				["node_modules/vscode-material-icons/generated", "node_modules/vscode-material-icons/generated"],
-				["node_modules/@vscode/codicons/dist", "node_modules/@vscode/codicons/dist"],
-			]
-
-			for (const [srcRelPath, dstRelPath] of copyPaths) {
-				const srcDir = path.join(__dirname, srcRelPath)
-				const dstDir = path.join(ROOT_DIR, dstRelPath)
-
-				if (!fs.existsSync(srcDir)) {
-					throw new Error(`Directory does not exist: ${srcDir}`)
-				}
-
-				fs.mkdirSync(dstDir, { recursive: true })
-				let count = 0
-
-				function copyDir(src, dest) {
-					const entries = fs.readdirSync(src, { withFileTypes: true })
-
-					for (const entry of entries) {
-						const srcPath = path.join(src, entry.name)
-						const dstDir = path.join(dest, entry.name)
-
-						if (entry.isDirectory()) {
-							fs.mkdirSync(dstDir, { recursive: true })
-							copyDir(srcPath, dstDir)
-						} else {
-							fs.copyFileSync(srcPath, dstDir)
-							count++
-						}
-					}
-				}
-
-				copyDir(srcDir, dstDir)
-				console.log(`[copy-assets] Copied ${count} files from ${srcDir} to ${dstDir}`)
-			}
-		})
-	},
-}
-
-/**
- * @type {import('esbuild').Plugin}
- */
-const copyPackageJson = {
-	name: "copy-package-json",
-	setup(build) {
-		build.onEnd(() => {
-			const srcDir = __dirname
-			const srcPath = path.join(srcDir, "package.json")
-			const dstDir = ROOT_DIR
-
-			if (!fs.existsSync(dstDir)) {
-				throw new Error(`Directory does not exist: ${dstDir}`)
-			}
-
-			// Copy package.json to the dist directory and rename the extension to "roo-cline".
-			const packageJson = JSON.parse(fs.readFileSync(srcPath, "utf8"))
-			packageJson.name = "roo-cline"
-			fs.writeFileSync(path.join(dstDir, "package.json"), JSON.stringify(packageJson, null, 2), "utf8")
-			console.log(`[copy-package-json] Copied package.json to ${dstDir}`)
-
-			// Copy all package.nls.* files to the dist directory.
-			const nlsFiles = fs.readdirSync(srcDir).filter((file) => file.startsWith("package.nls."))
-			let count = 0
-
-			for (const nlsFile of nlsFiles) {
-				fs.copyFileSync(path.join(srcDir, nlsFile), path.join(dstDir, nlsFile))
-				count++
-			}
-
-			console.log(`[copy-package-json] Copied ${count} package.nls.*.json files to ${dstDir}`)
-		})
-	},
-}
-
-/**
  * @type {import('esbuild').BuildOptions}
  */
 const extensionConfig = {
@@ -249,8 +160,6 @@ const extensionConfig = {
 	plugins: [
 		copyWasmFiles,
 		copyLocalesFiles,
-		copyAssets,
-		copyPackageJson,
 		esbuildProblemMatcherPlugin,
 		{
 			name: "alias-plugin",
@@ -265,7 +174,7 @@ const extensionConfig = {
 	format: "cjs",
 	sourcesContent: false,
 	platform: "node",
-	outfile: ROOT_DIR_RELATIVE + "/dist/extension.js",
+	outfile: "dist/extension.js",
 	external: ["vscode"],
 }
 
@@ -281,7 +190,7 @@ const workerConfig = {
 	format: "cjs",
 	sourcesContent: false,
 	platform: "node",
-	outdir: ROOT_DIR_RELATIVE + "/dist/workers",
+	outdir: "dist/workers",
 }
 
 async function main() {

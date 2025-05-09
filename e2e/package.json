@@ -5,7 +5,7 @@
 		"lint": "eslint --max-warnings=0 src/**/*.ts",
 		"check-types": "tsc --noEmit",
 		"format": "prettier --write src",
-		"test:ci": "pnpm --filter @roo-code/vscode package:development && pnpm test:run",
+		"test:ci": "pnpm --filter roo-cline build:development && pnpm test:run",
 		"test:run": "rimraf out && tsc -p tsconfig.json && npx dotenvx run -f .env.local -- node ./out/runTest.js"
 	},
 	"devDependencies": {

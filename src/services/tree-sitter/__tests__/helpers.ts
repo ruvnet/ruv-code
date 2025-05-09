@@ -54,7 +54,7 @@ export async function initializeWorkingParser() {
 	const originalLoad = TreeSitter.Language.load
 	TreeSitter.Language.load = async (wasmPath: string) => {
 		const filename = path.basename(wasmPath)
-		const correctPath = path.join(process.cwd(), "..", "dist", "dist", filename)
+		const correctPath = path.join(process.cwd(), "dist", filename)
 		// console.log(`Redirecting WASM load from ${wasmPath} to ${correctPath}`)
 		return originalLoad(correctPath)
 	}
