@@ -320,6 +320,7 @@
 	"scripts": {
 		"lint": "eslint **/*.ts",
 		"check-types": "tsc --noEmit",
+		"pretest": "node esbuild.js",
 		"test": "jest -w=40% && vitest run",
 		"format": "prettier --write .",
 		"build": "node esbuild.js --production --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
