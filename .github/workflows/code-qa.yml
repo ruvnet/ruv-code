@@ -80,19 +80,20 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: 'pnpm'
       - name: Install dependencies
-        run: npm run install:all
-      - name: Compile (to build and copy WASM files)
-        run: npm run compile
-      - name: Run jest unit tests
-        run: npx jest --silent
-      - name: Run vitest unit tests
-        run: npx vitest run --silent
+        run: pnpm install
+      - name: Run unit tests
+        working-directory: src
+        run: pnpm test
 
   test-webview:
     runs-on: ${{ matrix.os }}
@@ -123,21 +124,6 @@ jobs:
     steps:
       - name: NO-OP
         run: echo "All unit tests passed."
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-      - name: Install dependencies
-        run: pnpm install
-      - name: Run unit tests
-        run: pnpm test
 
   check-openrouter-api-key:
     runs-on: ubuntu-latest

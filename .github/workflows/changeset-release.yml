@@ -55,7 +55,7 @@ jobs:
         with:
           commit: "changeset version bump"
           title: "Changeset version bump"
-          version: pnpm version-packages # This performs the changeset version bump
+          version: pnpm --filter @roo-code/vscode version-packages # This performs the changeset version bump
         env:
           GITHUB_TOKEN: ${{ secrets.CROSS_REPO_ACCESS_TOKEN }}
 
