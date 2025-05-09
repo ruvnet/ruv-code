@@ -5,6 +5,10 @@ const path = require("path")
 const production = process.argv.includes("--production")
 const watch = process.argv.includes("--watch")
 
+const ROOT_DIR_RELATIVE = "../dist"
+const ROOT_DIR = path.join(__dirname, ROOT_DIR_RELATIVE)
+const DIST_DIR = path.join(ROOT_DIR, "dist")
+
 /**
  * @type {import('esbuild').Plugin}
  */
@@ -12,78 +16,72 @@ const esbuildProblemMatcherPlugin = {
 	name: "esbuild-problem-matcher",
 
 	setup(build) {
-		build.onStart(() => {
-			console.log("[watch] build started")
-		})
 		build.onEnd((result) => {
 			result.errors.forEach(({ text, location }) => {
 				console.error(`✘ [ERROR] ${text}`)
 				console.error(`    ${location.file}:${location.line}:${location.column}:`)
 			})
-			console.log("[watch] build finished")
 		})
 	},
 }
 
+/**
+ * @type {import('esbuild').Plugin}
+ */
 const copyWasmFiles = {
 	name: "copy-wasm-files",
 	setup(build) {
 		build.onEnd(() => {
 			const nodeModulesDir = path.join(__dirname, "node_modules")
-			const distDir = path.join(__dirname, "dist")
+			const distDir = DIST_DIR
 
-			// tiktoken WASM file
+			fs.mkdirSync(distDir, { recursive: true })
+
+			// Tiktoken WASM file.
 			fs.copyFileSync(
 				path.join(nodeModulesDir, "tiktoken", "tiktoken_bg.wasm"),
 				path.join(distDir, "tiktoken_bg.wasm"),
 			)
 
-			// Main tree-sitter WASM file
+			console.log(`[copy-wasm-files] Copied tiktoken_bg.wasm to ${distDir}`)
+
+			// Main tree-sitter WASM file.
 			fs.copyFileSync(
 				path.join(nodeModulesDir, "web-tree-sitter", "tree-sitter.wasm"),
 				path.join(distDir, "tree-sitter.wasm"),
 			)
 
-			// Copy language-specific WASM files
+			console.log(`[copy-wasm-files] Copied tree-sitter.wasm to ${distDir}`)
+
+			// Copy language-specific WASM files.
 			const languageWasmDir = path.join(__dirname, "node_modules", "tree-sitter-wasms", "out")
 
-			// Dynamically read all WASM files from the directory instead of using a hardcoded list
-			if (fs.existsSync(languageWasmDir)) {
-				const wasmFiles = fs.readdirSync(languageWasmDir).filter((file) => file.endsWith(".wasm"))
-
-				console.log(`Copying ${wasmFiles.length} tree-sitter WASM files to dist directory`)
-
-				wasmFiles.forEach((filename) => {
-					fs.copyFileSync(path.join(languageWasmDir, filename), path.join(distDir, filename))
-				})
-			} else {
-				console.warn(`Tree-sitter WASM directory not found: ${languageWasmDir}`)
+			if (!fs.existsSync(languageWasmDir)) {
+				throw new Error(`Directory does not exist: ${languageWasmDir}`)
 			}
+
+			// Dynamically read all WASM files from the directory instead of using a hardcoded list.
+			const wasmFiles = fs.readdirSync(languageWasmDir).filter((file) => file.endsWith(".wasm"))
+
+			wasmFiles.forEach((filename) => {
+				fs.copyFileSync(path.join(languageWasmDir, filename), path.join(distDir, filename))
+			})
+
+			console.log(`[copy-wasm-files] Copied ${wasmFiles.length} tree-sitter language wasms to ${distDir}`)
 		})
 	},
 }
 
-// Simple function to copy locale files
 function copyLocaleFiles() {
 	const srcDir = path.join(__dirname, "i18n", "locales")
-	const destDir = path.join(__dirname, "dist", "i18n", "locales")
-	const outDir = path.join(__dirname, "out", "i18n", "locales")
-	console.log("copyLocaleFiles", { srcDir, destDir, outDir })
+	const destDir = path.join(DIST_DIR, "i18n", "locales")
 
-	// Ensure source directory exists before proceeding
 	if (!fs.existsSync(srcDir)) {
-		console.warn(`Source locales directory does not exist: ${srcDir}`)
-		return // Exit early if source directory doesn't exist
+		throw new Error(`Directory does not exist: ${srcDir}`)
 	}
 
-	// Create destination directories
 	fs.mkdirSync(destDir, { recursive: true })
 
-	try {
-		fs.mkdirSync(outDir, { recursive: true })
-	} catch (e) {}
-
-	// Function to copy directory recursively
 	function copyDir(src, dest) {
 		const entries = fs.readdirSync(src, { withFileTypes: true })
 
@@ -92,36 +90,25 @@ function copyLocaleFiles() {
 			const destPath = path.join(dest, entry.name)
 
 			if (entry.isDirectory()) {
-				// Create directory and copy contents
 				fs.mkdirSync(destPath, { recursive: true })
 				copyDir(srcPath, destPath)
 			} else {
-				// Copy the file
 				fs.copyFileSync(srcPath, destPath)
 			}
 		}
 	}
 
-	// Copy files to dist directory
 	copyDir(srcDir, destDir)
-	console.log("Copied locale files to dist/i18n/locales")
-
-	// Copy to out directory for debugging
-	try {
-		copyDir(srcDir, outDir)
-		console.log("Copied locale files to out/i18n/locales")
-	} catch (e) {
-		console.warn("Could not copy to out directory:", e.message)
-	}
+	console.log(`[copy-locales-files] Copied locale files to ${destDir}`)
 }
 
-// Set up file watcher if in watch mode
 function setupLocaleWatcher() {
-	if (!watch) return
+	if (!watch) {
+		return
+	}
 
 	const localesDir = path.join(__dirname, "src", "i18n", "locales")
 
-	// Ensure the locales directory exists before setting up watcher
 	if (!fs.existsSync(localesDir)) {
 		console.warn(`Cannot set up watcher: Source locales directory does not exist: ${localesDir}`)
 		return
@@ -129,17 +116,20 @@ function setupLocaleWatcher() {
 
 	console.log(`Setting up watcher for locale files in ${localesDir}`)
 
-	// Use a debounce mechanism
 	let debounceTimer = null
+
 	const debouncedCopy = () => {
-		if (debounceTimer) clearTimeout(debounceTimer)
+		if (debounceTimer) {
+			clearTimeout(debounceTimer)
+		}
+
+		// Wait 300ms after last change before copying.
 		debounceTimer = setTimeout(() => {
 			console.log("Locale files changed, copying...")
 			copyLocaleFiles()
-		}, 300) // Wait 300ms after last change before copying
+		}, 300)
 	}
 
-	// Watch the locales directory
 	try {
 		fs.watch(localesDir, { recursive: true }, (eventType, filename) => {
 			if (filename && filename.endsWith(".json")) {
@@ -153,15 +143,104 @@ function setupLocaleWatcher() {
 	}
 }
 
+/**
+ * @type {import('esbuild').Plugin}
+ */
 const copyLocalesFiles = {
 	name: "copy-locales-files",
 	setup(build) {
+		build.onEnd(() => copyLocaleFiles())
+	},
+}
+
+/**
+ * @type {import('esbuild').Plugin}
+ */
+const copyAssets = {
+	name: "copy-assets",
+	setup(build) {
 		build.onEnd(() => {
-			copyLocaleFiles()
+			const copyPaths = [
+				["assets/icons", "assets/icons"],
+				["assets/images", "assets/images"],
+				["integrations/theme/default-themes", "src/integrations/theme/default-themes"],
+				["node_modules/vscode-material-icons/generated", "node_modules/vscode-material-icons/generated"],
+				["node_modules/@vscode/codicons/dist", "node_modules/@vscode/codicons/dist"],
+			]
+
+			for (const [srcRelPath, dstRelPath] of copyPaths) {
+				const srcDir = path.join(__dirname, srcRelPath)
+				const dstDir = path.join(ROOT_DIR, dstRelPath)
+
+				if (!fs.existsSync(srcDir)) {
+					throw new Error(`Directory does not exist: ${srcDir}`)
+				}
+
+				fs.mkdirSync(dstDir, { recursive: true })
+				let count = 0
+
+				function copyDir(src, dest) {
+					const entries = fs.readdirSync(src, { withFileTypes: true })
+
+					for (const entry of entries) {
+						const srcPath = path.join(src, entry.name)
+						const dstDir = path.join(dest, entry.name)
+
+						if (entry.isDirectory()) {
+							fs.mkdirSync(dstDir, { recursive: true })
+							copyDir(srcPath, dstDir)
+						} else {
+							fs.copyFileSync(srcPath, dstDir)
+							count++
+						}
+					}
+				}
+
+				copyDir(srcDir, dstDir)
+				console.log(`[copy-assets] Copied ${count} files from ${srcDir} to ${dstDir}`)
+			}
 		})
 	},
 }
 
+/**
+ * @type {import('esbuild').Plugin}
+ */
+const copyPackageJson = {
+	name: "copy-package-json",
+	setup(build) {
+		build.onEnd(() => {
+			const srcDir = __dirname
+			const srcPath = path.join(srcDir, "package.json")
+			const dstDir = ROOT_DIR
+
+			if (!fs.existsSync(dstDir)) {
+				throw new Error(`Directory does not exist: ${dstDir}`)
+			}
+
+			// Copy package.json to the dist directory and rename the extension to "roo-cline".
+			const packageJson = JSON.parse(fs.readFileSync(srcPath, "utf8"))
+			packageJson.name = "roo-cline"
+			fs.writeFileSync(path.join(dstDir, "package.json"), JSON.stringify(packageJson, null, 2), "utf8")
+			console.log(`[copy-package-json] Copied package.json to ${dstDir}`)
+
+			// Copy all package.nls.* files to the dist directory.
+			const nlsFiles = fs.readdirSync(srcDir).filter((file) => file.startsWith("package.nls."))
+			let count = 0
+
+			for (const nlsFile of nlsFiles) {
+				fs.copyFileSync(path.join(srcDir, nlsFile), path.join(dstDir, nlsFile))
+				count++
+			}
+
+			console.log(`[copy-package-json] Copied ${count} package.nls.*.json files to ${dstDir}`)
+		})
+	},
+}
+
+/**
+ * @type {import('esbuild').BuildOptions}
+ */
 const extensionConfig = {
 	bundle: true,
 	minify: production,
@@ -170,14 +249,15 @@ const extensionConfig = {
 	plugins: [
 		copyWasmFiles,
 		copyLocalesFiles,
-		/* add to the end of plugins array */
+		copyAssets,
+		copyPackageJson,
 		esbuildProblemMatcherPlugin,
 		{
 			name: "alias-plugin",
 			setup(build) {
-				build.onResolve({ filter: /^pkce-challenge$/ }, (_args) => {
-					return { path: require.resolve("pkce-challenge/dist/index.browser.js") }
-				})
+				build.onResolve({ filter: /^pkce-challenge$/ }, (_args) => ({
+					path: require.resolve("pkce-challenge/dist/index.browser.js"),
+				}))
 			},
 		},
 	],
@@ -185,10 +265,13 @@ const extensionConfig = {
 	format: "cjs",
 	sourcesContent: false,
 	platform: "node",
-	outfile: "dist/extension.js",
+	outfile: ROOT_DIR_RELATIVE + "/dist/extension.js",
 	external: ["vscode"],
 }
 
+/**
+ * @type {import('esbuild').BuildOptions}
+ */
 const workerConfig = {
 	bundle: true,
 	minify: production,
@@ -198,7 +281,7 @@ const workerConfig = {
 	format: "cjs",
 	sourcesContent: false,
 	platform: "node",
-	outdir: "dist/workers",
+	outdir: ROOT_DIR_RELATIVE + "/dist/workers",
 }
 
 async function main() {

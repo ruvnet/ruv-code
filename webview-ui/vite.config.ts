@@ -56,7 +56,8 @@ export default defineConfig({
 		},
 	},
 	build: {
-		outDir: "build",
+		outDir: "../dist/webview-ui/build",
+		emptyOutDir: true,
 		reportCompressedSize: false,
 		rollupOptions: {
 			output: {

@@ -5,9 +5,8 @@
 		"lint": "eslint --max-warnings=0 src/**/*.ts",
 		"check-types": "tsc --noEmit",
 		"format": "prettier --write src",
-		"test:quick": "pnpm build && npx dotenvx run -f .env.local -- node ./out/runTest.js",
-		"test:ci": "pnpm --filter @roo-code/vscode compile && pnpm --filter @roo-code/vscode-webview build && pnpm test:quick",
-		"build": "rimraf out && tsc -p tsconfig.json"
+		"test:ci": "pnpm --filter @roo-code/vscode package:development && pnpm test:run",
+		"test:run": "rimraf out && tsc -p tsconfig.json && npx dotenvx run -f .env.local -- node ./out/runTest.js"
 	},
 	"devDependencies": {
 		"@types/mocha": "^10.0.10",
