@@ -71,12 +71,6 @@ jobs:
         run: pnpm install
       - name: Run knip checks
         run: pnpm knip
-      - name: Compile (to build and copy WASM files)
-        run: pnpm compile
-      - name: Run jest unit tests
-        run: npx jest --silent
-      - name: Run vitest unit tests
-        run: npx vitest run --silent
 
   unit-test:
     runs-on: ${{ matrix.os }}
