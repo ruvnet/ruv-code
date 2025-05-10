@@ -108,7 +108,7 @@ function setupLocaleWatcher() {
 		return
 	}
 
-	const localesDir = path.join(__dirname, "src", "i18n", "locales")
+	const localesDir = path.join(__dirname, "i18n", "locales")
 
 	if (!fs.existsSync(localesDir)) {
 		console.warn(`Cannot set up watcher: Source locales directory does not exist: ${localesDir}`)
