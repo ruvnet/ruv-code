@@ -5,6 +5,25 @@ const path = require("path")
 const production = process.argv.includes("--production")
 const watch = process.argv.includes("--watch")
 
+function copyDir(srcDir, dstDir, count) {
+	const entries = fs.readdirSync(srcDir, { withFileTypes: true })
+
+	for (const entry of entries) {
+		const srcPath = path.join(srcDir, entry.name)
+		const dstPath = path.join(dstDir, entry.name)
+
+		if (entry.isDirectory()) {
+			fs.mkdirSync(dstPath, { recursive: true })
+			count = copyDir(srcPath, dstPath, count)
+		} else {
+			count = count + 1
+			fs.copyFileSync(srcPath, dstPath)
+		}
+	}
+
+	return count
+}
+
 /**
  * @type {import('esbuild').Plugin}
  */
@@ -77,25 +96,8 @@ function copyLocaleFiles() {
 	}
 
 	fs.mkdirSync(destDir, { recursive: true })
-
-	function copyDir(src, dest) {
-		const entries = fs.readdirSync(src, { withFileTypes: true })
-
-		for (const entry of entries) {
-			const srcPath = path.join(src, entry.name)
-			const destPath = path.join(dest, entry.name)
-
-			if (entry.isDirectory()) {
-				fs.mkdirSync(destPath, { recursive: true })
-				copyDir(srcPath, destPath)
-			} else {
-				fs.copyFileSync(srcPath, destPath)
-			}
-		}
-	}
-
-	copyDir(srcDir, destDir)
-	console.log(`[copy-locales-files] Copied locale files to ${destDir}`)
+	const count = copyDir(srcDir, destDir, 0)
+	console.log(`[copy-locales-files] Copied ${count} locale files to ${destDir}`)
 }
 
 function setupLocaleWatcher() {
@@ -171,27 +173,7 @@ const copyAssets = {
 				}
 
 				fs.mkdirSync(dstDir, { recursive: true })
-
-				let count = 0
-
-				function copyDir(src, dest) {
-					const entries = fs.readdirSync(src, { withFileTypes: true })
-
-					for (const entry of entries) {
-						const srcPath = path.join(src, entry.name)
-						const dstDir = path.join(dest, entry.name)
-
-						if (entry.isDirectory()) {
-							fs.mkdirSync(dstDir, { recursive: true })
-							copyDir(srcPath, dstDir)
-						} else {
-							fs.copyFileSync(srcPath, dstDir)
-							count++
-						}
-					}
-				}
-
-				copyDir(srcDir, dstDir)
+				const count = copyDir(srcDir, dstDir, 0)
 				console.log(`[copy-assets] Copied ${count} assets from ${srcDir} to ${dstDir}`)
 			}
 		})
