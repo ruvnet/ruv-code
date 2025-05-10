@@ -166,8 +166,12 @@ const copyAssets = {
 					throw new Error(`Directory does not exist: ${srcDir}`)
 				}
 
-				fs.rmSync(dstDir, { recursive: true })
+				if (fs.existsSync(dstDir)) {
+					fs.rmSync(dstDir, { recursive: true })
+				}
+
 				fs.mkdirSync(dstDir, { recursive: true })
+
 				let count = 0
 
 				function copyDir(src, dest) {
