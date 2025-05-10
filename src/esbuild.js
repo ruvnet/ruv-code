@@ -150,6 +150,51 @@ const copyLocalesFiles = {
 }
 
 /**
+ * @type {import('esbuild').Plugin}
+ */
+const copyAssets = {
+	name: "copy-assets",
+	setup(build) {
+		build.onEnd(() => {
+			const copyPaths = [["node_modules/vscode-material-icons/generated", "assets/vscode-material-icons"]]
+
+			for (const [srcRelPath, dstRelPath] of copyPaths) {
+				const srcDir = path.join(__dirname, srcRelPath)
+				const dstDir = path.join(__dirname, dstRelPath)
+
+				if (!fs.existsSync(srcDir)) {
+					throw new Error(`Directory does not exist: ${srcDir}`)
+				}
+
+				fs.rmSync(dstDir, { recursive: true })
+				fs.mkdirSync(dstDir, { recursive: true })
+				let count = 0
+
+				function copyDir(src, dest) {
+					const entries = fs.readdirSync(src, { withFileTypes: true })
+
+					for (const entry of entries) {
+						const srcPath = path.join(src, entry.name)
+						const dstDir = path.join(dest, entry.name)
+
+						if (entry.isDirectory()) {
+							fs.mkdirSync(dstDir, { recursive: true })
+							copyDir(srcPath, dstDir)
+						} else {
+							fs.copyFileSync(srcPath, dstDir)
+							count++
+						}
+					}
+				}
+
+				copyDir(srcDir, dstDir)
+				console.log(`[copy-assets] Copied ${count} assets from ${srcDir} to ${dstDir}`)
+			}
+		})
+	},
+}
+
+/**
  * @type {import('esbuild').BuildOptions}
  */
 const extensionConfig = {
@@ -160,6 +205,7 @@ const extensionConfig = {
 	plugins: [
 		copyWasmFiles,
 		copyLocalesFiles,
+		copyAssets,
 		esbuildProblemMatcherPlugin,
 		{
 			name: "alias-plugin",
