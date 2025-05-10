@@ -329,7 +329,7 @@
 		"publish": "pnpm vsix && changeset publish && pnpm install --package-lock-only",
 		"version-packages": "changeset version && pnpm install --package-lock-only",
 		"vscode:prepublish": "pnpm build",
-		"vsix": "rimraf ../dist && rimraf ../bin && mkdirp ../bin && npx vsce package --no-dependencies --out ../bin",
+		"vsix": "rimraf dist && rimraf webview-ui && rimraf ../bin && mkdirp ../bin && npx vsce package --no-dependencies --out ../bin",
 		"watch": "pnpm watch:esbuild watch:tsc",
 		"watch:esbuild": "node esbuild.js --watch",
 		"watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
