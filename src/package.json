@@ -330,7 +330,6 @@
 		"version-packages": "changeset version && pnpm install --package-lock-only",
 		"vscode:prepublish": "pnpm build",
 		"vsix": "rimraf dist && rimraf webview-ui && rimraf ../bin && mkdirp ../bin && npx vsce package --no-dependencies --out ../bin",
-		"watch": "pnpm watch:esbuild watch:tsc",
 		"watch:esbuild": "node esbuild.js --watch",
 		"watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
 		"generate-types": "tsx scripts/generate-types.mts"

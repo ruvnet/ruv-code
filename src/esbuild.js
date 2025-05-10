@@ -31,11 +31,14 @@ const esbuildProblemMatcherPlugin = {
 	name: "esbuild-problem-matcher",
 
 	setup(build) {
+		build.onStart(() => console.log("[esbuild-problem-matcher#onStart]"))
 		build.onEnd((result) => {
 			result.errors.forEach(({ text, location }) => {
 				console.error(`✘ [ERROR] ${text}`)
 				console.error(`    ${location.file}:${location.line}:${location.column}:`)
 			})
+
+			console.log("[esbuild-problem-matcher#onEnd]")
 		})
 	},
 }

@@ -11,7 +11,6 @@
 		"check-types": "turbo check-types --log-order grouped --output-logs new-only",
 		"test": "turbo test --log-order grouped --output-logs new-only",
 		"format": "turbo format --log-order grouped --output-logs new-only",
-		"dev": "pnpm --filter @roo-code/vscode-webview dev",
 		"build": "pnpm --filter roo-cline vsix",
 		"changeset": "changeset",
 		"knip": "knip --include files",
