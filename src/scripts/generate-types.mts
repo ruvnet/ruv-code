@@ -19,7 +19,8 @@ async function main() {
 	await fs.writeFile("exports/types.ts", types.join("\n\n"))
 
 	await $`npx tsup exports/interface.ts --dts-only -d out`
-	await fs.copyFile('out/interface.d.ts', 'exports/roo-code.d.ts')
+	await fs.copyFile("out/interface.d.ts", "exports/roo-code.d.ts")
+	await fs.rm("out", { recursive: true })
 
 	await $`npx prettier --write exports/types.ts exports/roo-code.d.ts`
 }
