@@ -199,10 +199,19 @@ type ProviderSettings = {
 				| "litellm"
 		  )
 		| undefined
+	includeMaxTokens?: boolean | undefined
+	reasoningEffort?: ("low" | "medium" | "high") | undefined
+	promptCachingDisabled?: boolean | undefined
+	diffEnabled?: boolean | undefined
+	fuzzyMatchThreshold?: number | undefined
+	modelTemperature?: (number | null) | undefined
+	rateLimitSeconds?: number | undefined
+	modelMaxTokens?: number | undefined
+	modelMaxThinkingTokens?: number | undefined
+	apiModelId?: string | undefined
 	apiKey?: string | undefined
 	anthropicBaseUrl?: string | undefined
 	anthropicUseAuthToken?: boolean | undefined
-	apiModelId?: string | undefined
 	glamaModelId?: string | undefined
 	glamaApiKey?: string | undefined
 	openRouterApiKey?: string | undefined
@@ -301,15 +310,6 @@ type ProviderSettings = {
 	litellmBaseUrl?: string | undefined
 	litellmApiKey?: string | undefined
 	litellmModelId?: string | undefined
-	includeMaxTokens?: boolean | undefined
-	reasoningEffort?: ("low" | "medium" | "high") | undefined
-	promptCachingDisabled?: boolean | undefined
-	diffEnabled?: boolean | undefined
-	fuzzyMatchThreshold?: number | undefined
-	modelTemperature?: (number | null) | undefined
-	rateLimitSeconds?: number | undefined
-	modelMaxTokens?: number | undefined
-	modelMaxThinkingTokens?: number | undefined
 }
 
 export type { ProviderSettings }
