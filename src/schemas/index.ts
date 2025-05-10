@@ -358,12 +358,18 @@ const genericProviderSettingsSchema = z.object({
 	modelMaxThinkingTokens: z.number().optional(),
 })
 
-const anthropicSchema = z.object({
-	apiModelId: z.string().optional(),
-	apiKey: z.string().optional(),
-	anthropicBaseUrl: z.string().optional(),
-	anthropicUseAuthToken: z.boolean().optional(),
+// Several of the providers share common model config properties.
+const commonProviderModelSchema = z.object({
+	apiModelId: z.string().optional(), // Actually, the router providers don't use this
 })
+
+const anthropicSchema = z
+	.object({
+		apiKey: z.string().optional(),
+		anthropicBaseUrl: z.string().optional(),
+		anthropicUseAuthToken: z.boolean().optional(),
+	})
+	.merge(commonProviderModelSchema)
 
 const glamaSchema = z.object({
 	glamaModelId: z.string().optional(),
@@ -378,24 +384,28 @@ const openRouterSchema = z.object({
 	openRouterUseMiddleOutTransform: z.boolean().optional(),
 })
 
-const bedrockSchema = z.object({
-	awsAccessKey: z.string().optional(),
-	awsSecretKey: z.string().optional(),
-	awsSessionToken: z.string().optional(),
-	awsRegion: z.string().optional(),
-	awsUseCrossRegionInference: z.boolean().optional(),
-	awsUsePromptCache: z.boolean().optional(),
-	awsProfile: z.string().optional(),
-	awsUseProfile: z.boolean().optional(),
-	awsCustomArn: z.string().optional(),
-})
+const bedrockSchema = z
+	.object({
+		awsAccessKey: z.string().optional(),
+		awsSecretKey: z.string().optional(),
+		awsSessionToken: z.string().optional(),
+		awsRegion: z.string().optional(),
+		awsUseCrossRegionInference: z.boolean().optional(),
+		awsUsePromptCache: z.boolean().optional(),
+		awsProfile: z.string().optional(),
+		awsUseProfile: z.boolean().optional(),
+		awsCustomArn: z.string().optional(),
+	})
+	.merge(commonProviderModelSchema)
 
-const vertexSchema = z.object({
-	vertexKeyFile: z.string().optional(),
-	vertexJsonCredentials: z.string().optional(),
-	vertexProjectId: z.string().optional(),
-	vertexRegion: z.string().optional(),
-})
+const vertexSchema = z
+	.object({
+		vertexKeyFile: z.string().optional(),
+		vertexJsonCredentials: z.string().optional(),
+		vertexProjectId: z.string().optional(),
+		vertexRegion: z.string().optional(),
+	})
+	.merge(commonProviderModelSchema)
 
 const openAiSchema = z.object({
 	openAiBaseUrl: z.string().optional(),
@@ -435,25 +445,33 @@ const lmStudioSchema = z.object({
 	lmStudioSpeculativeDecodingEnabled: z.boolean().optional(),
 })
 
-const geminiSchema = z.object({
-	geminiApiKey: z.string().optional(),
-	googleGeminiBaseUrl: z.string().optional(),
-})
+const geminiSchema = z
+	.object({
+		geminiApiKey: z.string().optional(),
+		googleGeminiBaseUrl: z.string().optional(),
+	})
+	.merge(commonProviderModelSchema)
 
-const openAiNativeSchema = z.object({
-	openAiNativeApiKey: z.string().optional(),
-	openAiNativeBaseUrl: z.string().optional(),
-})
+const openAiNativeSchema = z
+	.object({
+		openAiNativeApiKey: z.string().optional(),
+		openAiNativeBaseUrl: z.string().optional(),
+	})
+	.merge(commonProviderModelSchema)
 
-const mistralSchema = z.object({
-	mistralApiKey: z.string().optional(),
-	mistralCodestralUrl: z.string().optional(),
-})
+const mistralSchema = z
+	.object({
+		mistralApiKey: z.string().optional(),
+		mistralCodestralUrl: z.string().optional(),
+	})
+	.merge(commonProviderModelSchema)
 
-const deepSeekSchema = z.object({
-	deepSeekBaseUrl: z.string().optional(),
-	deepSeekApiKey: z.string().optional(),
-})
+const deepSeekSchema = z
+	.object({
+		deepSeekBaseUrl: z.string().optional(),
+		deepSeekApiKey: z.string().optional(),
+	})
+	.merge(commonProviderModelSchema)
 
 const unboundSchema = z.object({
 	unboundApiKey: z.string().optional(),
@@ -471,17 +489,23 @@ const fakeAiSchema = z.object({
 	fakeAi: z.unknown().optional(),
 })
 
-const xaiSchema = z.object({
-	xaiApiKey: z.string().optional(),
-})
+const xaiSchema = z
+	.object({
+		xaiApiKey: z.string().optional(),
+	})
+	.merge(commonProviderModelSchema)
 
-const groqSchema = z.object({
-	groqApiKey: z.string().optional(),
-})
+const groqSchema = z
+	.object({
+		groqApiKey: z.string().optional(),
+	})
+	.merge(commonProviderModelSchema)
 
-const chutesSchema = z.object({
-	chutesApiKey: z.string().optional(),
-})
+const chutesSchema = z
+	.object({
+		chutesApiKey: z.string().optional(),
+	})
+	.merge(commonProviderModelSchema)
 
 const litellmSchema = z.object({
 	litellmBaseUrl: z.string().optional(),
