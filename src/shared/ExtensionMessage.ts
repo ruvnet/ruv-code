@@ -73,6 +73,7 @@ export interface ExtensionMessage {
 		| "scaffoldPluginContentResponse"
 		| "registerPluginResponse"
 		| "scaffoldPluginFilesResponse"
+		| "createSparcPluginResponse"
 	text?: string
 	action?:
 		| "chatButtonClicked"
