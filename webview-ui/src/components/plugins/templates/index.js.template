@@ -1,0 +1,51 @@
+/**
+ * {{name}} - Roo Plugin
+ * {{description}}
+ */
+
+/**
+ * Plugin initialization function
+ * @param {object} context - The plugin context
+ */
+function initialize(context) {
+  // Register this plugin with Roo
+  context.registerPlugin({
+    slug: '{{slug}}',
+    name: '{{name}}',
+    description: '{{description}}',
+    version: '1.0.0',
+    {{#if roleDefinition}}
+    // Custom role definition provided during plugin creation
+    roleDefinition: `{{roleDefinition}}`,
+    {{/if}}
+    {{#if customInstructions}}
+    // Custom instructions provided during plugin creation
+    customInstructions: `{{customInstructions}}`,
+    {{/if}}
+    
+    // Plugin lifecycle hooks
+    onActivate: async () => {
+      console.log('Plugin {{name}} activated');
+      // You can initialize resources here
+    },
+    
+    onDeactivate: async () => {
+      console.log('Plugin {{name}} deactivated');
+      // You can clean up resources here
+    },
+    
+    // Plugin command handlers
+    commands: {
+      // Example command
+      exampleCommand: async (args) => {
+        return {
+          success: true,
+          result: `Example command executed with args: ${JSON.stringify(args)}`
+        };
+      }
+    }
+  });
+}
+
+// Export the initialization function
+module.exports = { initialize };

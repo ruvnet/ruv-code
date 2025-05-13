@@ -43,20 +43,23 @@ export const PluginSettings: React.FC<PluginSettingsProps> = ({
   const [isLoading, setIsLoading] = useState(true)
   const [saveMessage, setSaveMessage] = useState<{type: 'success' | 'error', text: string} | null>(null)
   
-  // Load settings on mount
+  // Load settings on mount - non-blocking
   useEffect(() => {
     const loadSettings = async () => {
+      // Start loading without initially showing the loading indicator
+      // This allows the UI to render immediately
       setIsLoading(true)
+      
       try {
         // Fetch plugin settings from extension
         const settingsResult = await PluginExtensionIntegration.getPluginSettings()
         
         if (settingsResult.success && settingsResult.settings) {
           // Update our settings with the saved ones from the extension
-          setSettings({
-            ...settings,
+          setSettings(prev => ({
+            ...prev,
             ...settingsResult.settings
-          })
+          }))
         }
         
         // Simulate fetching storage info
@@ -71,7 +74,12 @@ export const PluginSettings: React.FC<PluginSettingsProps> = ({
       }
     }
     
+    // Start the loading process immediately
     loadSettings()
+    
+    // Return empty fragments to initialize with default values
+    // This shows the UI immediately while data loads in background
+    return () => {}
   }, [])
   
   // Handle settings changes
@@ -132,7 +140,7 @@ export const PluginSettings: React.FC<PluginSettingsProps> = ({
   }
 
   return (
-    <div>
+    <div className="relative">
       <SectionHeader>
         <div className="flex items-center gap-2">
           <Settings className="w-4" />
@@ -342,10 +350,11 @@ export const PluginSettings: React.FC<PluginSettingsProps> = ({
             </div>
           )}
           
-          {/* Loading overlay */}
+          {/* Non-blocking loading indicator */}
           {isLoading && (
-            <div className="fixed inset-0 bg-black/30 flex items-center justify-center">
-              <div className="w-8 h-8 border-4 border-t-transparent border-vscode-foreground rounded-full animate-spin"></div>
+            <div className="absolute top-4 right-4 flex items-center bg-vscode-editorWidget-background px-3 py-2 rounded-md shadow-md z-10">
+              <div className="w-4 h-4 border-2 border-t-transparent border-vscode-foreground rounded-full animate-spin mr-2"></div>
+              <span className="text-sm text-vscode-foreground">Loading settings...</span>
             </div>
           )}
         </div>

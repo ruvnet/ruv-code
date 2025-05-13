@@ -221,36 +221,70 @@ describe('PluginExtensionIntegration', () => {
   });
 
   describe('Plugin Execution', () => {
-    test('runs a plugin', async () => {
-      // Mock successful response
-      vi.mocked(vscode.postMessage).mockResolvedValueOnce({
-        success: true
+      test('runs a plugin', async () => {
+        // Mock successful response
+        vi.mocked(vscode.postMessage).mockResolvedValueOnce({
+          success: true
+        });
+  
+        const result = await PluginExtensionIntegration.runPlugin('test-plugin');
+        
+        // Verify result
+        expect(result.success).toBe(true);
+        
+        // Verify correct message was posted
+        expect(vscode.postMessage).toHaveBeenCalledWith({
+          command: 'runPlugin',
+          slug: 'test-plugin'
+        });
       });
-
-      const result = await PluginExtensionIntegration.runPlugin('test-plugin');
-      
-      // Verify result
-      expect(result.success).toBe(true);
-      
-      // Verify correct message was posted
-      expect(vscode.postMessage).toHaveBeenCalledWith({
-        command: 'runPlugin',
-        slug: 'test-plugin'
+  
+      test('handles plugin execution failures', async () => {
+        // Mock failure response
+        vi.mocked(vscode.postMessage).mockResolvedValueOnce({
+          success: false,
+          error: 'Plugin execution failed'
+        });
+  
+        const result = await PluginExtensionIntegration.runPlugin('test-plugin');
+        
+        // Verify result
+        expect(result.success).toBe(false);
+        expect(result.error).toBe('Plugin execution failed');
       });
     });
-
-    test('handles plugin execution failures', async () => {
-      // Mock failure response
-      vi.mocked(vscode.postMessage).mockResolvedValueOnce({
-        success: false,
-        error: 'Plugin execution failed'
+  
+    describe('Plugin Scaffolding', () => {
+      test('successfully scaffolds plugin files', async () => {
+        // Mock successful response
+        vi.mocked(vscode.postMessage).mockResolvedValueOnce({
+          success: true
+        });
+  
+        const result = await PluginExtensionIntegration.scaffoldPluginFiles(samplePlugin);
+        
+        // Verify result
+        expect(result.success).toBe(true);
+        
+        // Verify correct message was posted
+        expect(vscode.postMessage).toHaveBeenCalledWith({
+          command: 'scaffoldPluginFiles',
+          plugin: samplePlugin
+        });
       });
-
-      const result = await PluginExtensionIntegration.runPlugin('test-plugin');
-      
-      // Verify result
-      expect(result.success).toBe(false);
-      expect(result.error).toBe('Plugin execution failed');
+  
+      test('handles scaffolding failures', async () => {
+        // Mock failure response
+        vi.mocked(vscode.postMessage).mockResolvedValueOnce({
+          success: false,
+          error: 'Failed to scaffold plugin files'
+        });
+  
+        const result = await PluginExtensionIntegration.scaffoldPluginFiles(samplePlugin);
+        
+        // Verify result
+        expect(result.success).toBe(false);
+        expect(result.error).toBe('Failed to scaffold plugin files');
+      });
     });
-  });
 });

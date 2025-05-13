@@ -200,19 +200,36 @@ describe('InstalledPlugins Component', () => {
 
   test('calls onAddPlugin when Add Plugin button is clicked', () => {
     render(
-      <InstalledPlugins 
-        plugins={mockPlugins} 
+      <InstalledPlugins
+        plugins={mockPlugins}
         onAddPlugin={onAddPlugin}
         onPluginsChanged={onPluginsChanged}
       />
     );
     
-    // Find and click the Add Plugin button
-    const addButtons = screen.getAllByText('common:newPlugin');
+    // Find and click the Add Plugin button (now icon-only with title attribute)
+    const addButtons = screen.getAllByTitle('common:newPlugin');
     fireEvent.click(addButtons[0]);
     
     // Check if the callback was called
     expect(onAddPlugin).toHaveBeenCalled();
+  });
+
+  test('calls onPluginsChanged when Refresh button is clicked', () => {
+    render(
+      <InstalledPlugins
+        plugins={mockPlugins}
+        onAddPlugin={onAddPlugin}
+        onPluginsChanged={onPluginsChanged}
+      />
+    );
+    
+    // Find and click the Refresh button (now icon-only with title attribute)
+    const refreshButton = screen.getByTitle('common:refresh');
+    fireEvent.click(refreshButton);
+    
+    // Check if the callback was called
+    expect(onPluginsChanged).toHaveBeenCalled();
   });
 
   test('calls handleToggleEnable when checkbox is clicked', () => {

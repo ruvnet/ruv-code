@@ -1,0 +1,74 @@
+# {{name}}
+
+{{description}}
+
+## About
+
+This is a plugin for Roo designed to extend its functionality. This plugin was created using the Roo Plugin Wizard.
+
+## Features
+
+- [Add plugin features here]
+
+## Installation
+
+### Remote Installation (NPM)
+
+If this plugin is published to npm, you can install it using:
+
+```bash
+npm install {{package}}
+```
+
+Then, in your Roo configuration, add this plugin:
+
+```json
+{
+  "plugins": [
+    {
+      "slug": "{{slug}}",
+      "name": "{{name}}",
+      "enabled": true,
+      "location": "remote",
+      "package": "{{package}}"
+    }
+  ]
+}
+```
+
+### Local Installation
+
+For local development, you can use this plugin from your filesystem:
+
+1. Clone this repository or download the source code
+2. In your Roo configuration, add this plugin:
+
+```json
+{
+  "plugins": [
+    {
+      "slug": "{{slug}}",
+      "name": "{{name}}",
+      "enabled": true,
+      "location": "local",
+      "path": "/path/to/plugin/directory"
+    }
+  ]
+}
+```
+
+## Usage
+
+[Add usage instructions here]
+
+## Development
+
+This plugin was scaffolded with the Roo Plugin Wizard. To modify it:
+
+1. Edit the `index.js` file to update functionality
+2. Update the `.rooplugins` file to change metadata
+3. Test your changes with Roo
+
+## License
+
+MIT

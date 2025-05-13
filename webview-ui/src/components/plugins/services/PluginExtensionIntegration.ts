@@ -2,10 +2,88 @@ import { RooPluginEntry, RooPluginManifest } from '../schemas/plugin-schema';
 import { vscode } from '@/utilities/vscode';
 
 /**
- * Handles communication between the webview UI and the extension 
+ * Handles communication between the webview UI and the extension
  * for plugin-related operations
  */
 export class PluginExtensionIntegration {
+  /**
+   * Scaffold new plugin files in the .roo/plugins directory
+   * This method is maintained for backward compatibility
+   * 
+   * @param plugin The plugin entry to scaffold
+   * @returns A promise with the result of the operation
+   */
+  static async scaffoldPluginFiles(plugin: RooPluginEntry): Promise<{ success: boolean; error?: string; partialSuccess?: boolean }> {
+    try {
+      const response = await vscode.postMessage<{
+        command: 'scaffoldPluginFiles';
+        plugin: RooPluginEntry;
+      }, { success: boolean; error?: string }>({
+        command: 'scaffoldPluginFiles',
+        plugin
+      });
+      
+      return response;
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
+      };
+    }
+  }
+
+  /**
+   * Initialize plugin scaffolding by creating base directory structure
+   * This is part of the chunked scaffolding approach to prevent timeouts
+   * 
+   * @param plugin The plugin entry to initialize
+   * @returns Promise with result of the operation
+   */
+  static async scaffoldPluginInit(plugin: RooPluginEntry): Promise<{ success: boolean; error?: string }> {
+    try {
+      const response = await vscode.postMessage<{
+        command: 'scaffoldPluginInit';
+        plugin: RooPluginEntry;
+      }, { success: boolean; error?: string }>({
+        command: 'scaffoldPluginInit',
+        plugin
+      });
+      
+      return response;
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
+      };
+    }
+  }
+  
+  /**
+   * Create plugin content files after directory structure is initialized
+   * This is part of the chunked scaffolding approach to prevent timeouts
+   * 
+   * @param plugin The plugin entry to create content for
+   * @returns Promise with result of the operation
+   */
+  static async scaffoldPluginContent(plugin: RooPluginEntry): Promise<{ success: boolean; error?: string; partialSuccess?: boolean }> {
+    try {
+      const response = await vscode.postMessage<{
+        command: 'scaffoldPluginContent';
+        plugin: RooPluginEntry;
+      }, { success: boolean; error?: string; partialSuccess?: boolean }>({
+        command: 'scaffoldPluginContent',
+        plugin
+      });
+      
+      return response;
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
+      };
+    }
+  }
+
   /**
    * Install a plugin and notify the extension
    * @param plugin The plugin to install

@@ -81,9 +81,9 @@ const createVSCodeApi = (): VSCodeAPI => {
         setTimeout(() => {
           if (callbacks.has(requestId)) {
             callbacks.delete(requestId);
-            reject(new Error('Request timed out'));
+            reject(new Error('Request timed out - consider checking the terminal for any errors'));
           }
-        }, 30000); // 30 second timeout
+        }, 300000); // 300 second (5 minute) timeout for better handling of large plugin operations
       });
     },
     

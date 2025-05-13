@@ -15,7 +15,8 @@
 	"pluginSections": {
 		"installed": "Installed",
 		"registry": "Registry",
-		"settings": "Settings"
+		"settings": "Settings",
+		"wizard": "Wizard"
 	},
 	"installedPlugins": "Installed Plugins",
 	"pluginRegistry": "Plugin Registry",
@@ -68,5 +69,12 @@
 	"developerMode": "Developer mode",
 	"developerModeDescription": "Enable additional features for plugin development",
 	"pluginTimeout": "Plugin execution timeout",
-	"seconds": "seconds"
+	"seconds": "seconds",
+	
+	"welcomeToPlugins": "Welcome to Roo Plugins",
+	"pluginWelcomeDescription": "Enhance your development experience with plugins. Get started by adding your first plugin.",
+	"installExistingPlugin": "Install Existing Plugin",
+	"installExistingPluginDescription": "Browse and install plugins from the registry",
+	"addPlugin": "Add Plugin",
+	"createFromWizard": "Create with Wizard"
 }

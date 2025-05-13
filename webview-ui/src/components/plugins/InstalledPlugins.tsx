@@ -18,6 +18,7 @@ import { SectionHeader } from "@/components/plugins/SectionHeader"
 
 import { RooPluginEntry } from "./schemas/plugin-schema"
 import { PluginExtensionIntegration } from "./services/PluginExtensionIntegration"
+import { PluginWelcomeScreen } from "./PluginWelcomeScreen"
 
 interface InstalledPluginsProps {
   plugins: RooPluginEntry[]
@@ -240,28 +241,51 @@ export const InstalledPlugins: React.FC<InstalledPluginsProps> = ({ plugins, onA
   )
 
   return (
-    <div>
+    <div className="max-w-[1200px] mx-auto">
       <SectionHeader>
-        <div className="flex items-center gap-2">
-          <Plus className="w-4" />
-          <div>{t("common:installedPlugins")}</div>
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center gap-2">
+            <Plus className="w-4" />
+            <div>{t("common:installedPlugins")}</div>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              className="w-8 h-8 p-0"
+              onClick={handleRefresh}
+              title={t("common:refresh")}
+            >
+              <RefreshCcw size={16} />
+            </Button>
+            <Button
+              size="icon"
+              className="w-8 h-8 p-0"
+              onClick={onAddPlugin}
+              title={t("common:newPlugin")}
+            >
+              <Plus size={16} />
+            </Button>
+          </div>
         </div>
       </SectionHeader>
 
       <Section>
-        <div className="flex justify-between mb-4">
-          <div className="flex gap-2 items-center">
-            <div className="relative">
+        <div className="mb-4">
+          {/* Search and Category dropdown in a single row */}
+          <div className="flex flex-wrap gap-2 mb-2 w-full items-center">
+            <div className="relative flex-1 min-w-[200px]">
               <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-vscode-inputPlaceholderForeground" size={16} />
               <input
                 type="text"
                 placeholder={t("common:searchPlugins")}
-                className="pl-8 pr-3 py-1 bg-vscode-input-background text-vscode-input-foreground border border-vscode-input-border rounded-md"
+                className="pl-8 pr-3 py-1 w-full bg-vscode-input-background text-vscode-input-foreground border border-vscode-input-border rounded-md"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
               {searchQuery && (
-                <button 
+                <button
                   className="absolute right-2 top-1/2 transform -translate-y-1/2 text-vscode-inputPlaceholderForeground"
                   onClick={() => setSearchQuery("")}
                 >
@@ -271,7 +295,7 @@ export const InstalledPlugins: React.FC<InstalledPluginsProps> = ({ plugins, onA
             </div>
             
             <select
-              className="py-1 px-2 bg-vscode-dropdown-background text-vscode-dropdown-foreground border border-vscode-dropdown-border rounded-md"
+              className="py-1 px-3 bg-vscode-dropdown-background text-vscode-dropdown-foreground border border-vscode-dropdown-border rounded-md"
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
             >
@@ -280,49 +304,43 @@ export const InstalledPlugins: React.FC<InstalledPluginsProps> = ({ plugins, onA
               ))}
             </select>
           </div>
-          
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex items-center"
-              onClick={handleRefresh}
-            >
-              <RefreshCcw size={14} className="mr-1" />
-              {t("common:refresh")}
-            </Button>
-            <Button 
-              onClick={onAddPlugin}
-              className="flex items-center"
-            >
-              <Plus size={14} className="mr-1" />
-              {t("common:newPlugin")}
-            </Button>
-          </div>
         </div>
         
         {/* Status messages */}
         {error && (
-          <div className="mb-4 p-2 bg-vscode-errorBackground text-vscode-errorForeground rounded">
+          <div className="mb-2 p-2 bg-vscode-errorBackground text-vscode-errorForeground rounded">
             {error}
           </div>
         )}
         
         {successMessage && (
-          <div className="mb-4 p-2 bg-vscode-button-background text-vscode-foreground rounded">
+          <div className="mb-2 p-2 bg-vscode-button-background text-vscode-foreground rounded">
             {successMessage}
           </div>
         )}
         
-        <div className="mt-4">
-          {filteredPlugins.length > 0 ? (
-            filteredPlugins.map(renderPluginCard)
-          ) : (
-            <div className="text-center p-8 text-vscode-descriptionForeground">
-              {searchQuery ? t("common:noPluginsFound") : t("common:noPluginsInstalled")}
-            </div>
-          )}
-        </div>
+        {/* Welcome screen with zero top margin */}
+        {plugins.length === 0 && !searchQuery && (
+          <div className="mt-0 mb-2">
+            <PluginWelcomeScreen
+              onAddPlugin={onAddPlugin}
+              onOpenWizard={onAddPlugin}
+            />
+          </div>
+        )}
+        
+        {/* Show plugin list or "no plugins found" message */}
+        {(plugins.length > 0 || searchQuery) && (
+          <div className="mt-2">
+            {filteredPlugins.length > 0 ? (
+              filteredPlugins.map(renderPluginCard)
+            ) : (
+              <div className="text-center p-4 text-vscode-descriptionForeground">
+                {t("common:noPluginsFound")}
+              </div>
+            )}
+          </div>
+        )}
       </Section>
     </div>
   )

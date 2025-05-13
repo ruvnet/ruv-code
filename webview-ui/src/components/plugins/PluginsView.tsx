@@ -14,6 +14,7 @@ import {
 	Package,
 	Download,
 	Settings,
+	Wand2,
 	LucideIcon,
 } from "lucide-react"
 
@@ -42,7 +43,7 @@ import { Tab, TabContent, TabHeader, TabList, TabTrigger } from "../common/Tab"
 import { InstalledPlugins } from "./InstalledPlugins"
 import { PluginRegistry } from "./PluginRegistry"
 import { PluginSettings } from "./PluginSettings"
-import { PluginWizard } from "./PluginWizard"
+import { PluginWizard } from "./wizard"
 import { cn } from "@/lib/utils"
 
 export const pluginsTabsContainer = "flex flex-1 overflow-hidden [&.narrow_.tab-label]:hidden"
@@ -60,6 +61,7 @@ const sectionNames = [
 	"installed",
 	"registry",
 	"settings",
+	"wizard",
 ] as const
 
 type SectionName = (typeof sectionNames)[number]
@@ -68,7 +70,6 @@ type PluginsViewProps = {
 	onDone: () => void
 	targetSection?: string
 }
-
 
 const PluginsView = forwardRef<PluginsViewRef, PluginsViewProps>(({ onDone, targetSection }, ref) => {
 	const { t } = useAppTranslation()
@@ -102,17 +103,21 @@ const PluginsView = forwardRef<PluginsViewRef, PluginsViewProps>(({ onDone, targ
 
 	// Plugin state
 	const [plugins, setPlugins] = useState<RooPluginEntry[]>([])
-	const [isLoading, setIsLoading] = useState(true)
+	const [isLoading, setIsLoading] = useState(false)
 	const pluginManager = useRef(new PluginManager())
 	
-	// Load plugins on mount
+	// Load plugins on mount - non-blocking initial load
 	useEffect(() => {
-		loadPlugins()
+		// Start loading without blocking UI
+		loadPlugins(false)
 	}, [])
 	
 	// Load plugins from extension
-	const loadPlugins = async () => {
-		setIsLoading(true)
+	const loadPlugins = async (showLoadingIndicator = true) => {
+		if (showLoadingIndicator) {
+			setIsLoading(true)
+		}
+		
 		try {
 			const result = await PluginExtensionIntegration.getPlugins()
 			if (result.success && result.plugins) {
@@ -129,7 +134,6 @@ const PluginsView = forwardRef<PluginsViewRef, PluginsViewProps>(({ onDone, targ
 	}
 
 	const confirmDialogHandler = useRef<() => void>()
-	const [showWizard, setShowWizard] = useState(false)
 
 	// Handle unsaved changes
 	const checkUnsaveChanges = useCallback((then: () => void) => {
@@ -194,6 +198,7 @@ const PluginsView = forwardRef<PluginsViewRef, PluginsViewProps>(({ onDone, targ
 			{ id: "installed", icon: Package },
 			{ id: "registry", icon: Download },
 			{ id: "settings", icon: Settings },
+			{ id: "wizard", icon: Wand2 },
 		],
 		[]
 	)
@@ -304,65 +309,84 @@ const PluginsView = forwardRef<PluginsViewRef, PluginsViewProps>(({ onDone, targ
 				<TabContent className="p-0 flex-1 overflow-auto">
 					{/* Installed Plugins Section */}
 					{activeTab === "installed" && (
-						<>
-							{isLoading ? (
-								<div className="flex items-center justify-center h-40">
-									<div className="w-8 h-8 border-4 border-t-transparent border-vscode-foreground rounded-full animate-spin"></div>
+						<div className="relative">
+							{/* Show installed plugins right away, even if empty */}
+							<InstalledPlugins
+								onAddPlugin={() => handleTabChange("wizard")}
+								plugins={plugins}
+								onPluginsChanged={loadPlugins}
+							/>
+							
+							{/* Overlay loading indicator if needed */}
+							{isLoading && (
+								<div className="absolute top-4 right-4 flex items-center bg-vscode-editorWidget-background px-3 py-2 rounded-md shadow-md">
+									<div className="w-4 h-4 border-2 border-t-transparent border-vscode-foreground rounded-full animate-spin mr-2"></div>
+									<span className="text-sm text-vscode-foreground">Loading...</span>
 								</div>
-							) : (
-								<InstalledPlugins
-									onAddPlugin={() => setShowWizard(true)}
-									plugins={plugins}
-									onPluginsChanged={loadPlugins}
-								/>
 							)}
-						</>
+						</div>
 					)}
 
 					{/* Plugin Registry Section */}
 					{activeTab === "registry" && (
-						<PluginRegistry
-							onInstallPlugin={(_plugin) => {
-								// Handle plugin installation from registry
-								loadPlugins() // Refresh after installation
-								setChangeDetected(true)
-							}}
-						/>
+						<div className="max-w-[1200px] mx-auto">
+							<PluginRegistry
+								onInstallPlugin={(_plugin) => {
+									// Handle plugin installation from registry
+									loadPlugins() // Refresh after installation
+									setChangeDetected(true)
+								}}
+							/>
+							
+							{/* Add button to navigate to wizard tab */}
+							<div className="mt-6 mb-4 flex justify-center">
+								<Button
+									onClick={() => handleTabChange("wizard")}
+									className="flex items-center"
+								>
+									<Wand2 size={14} className="mr-1" />
+									{t("common:createCustomPlugin") || "Create Custom Plugin"}
+								</Button>
+							</div>
+						</div>
 					)}
 
 					{/* Plugin Settings Section */}
 					{activeTab === "settings" && (
-						<PluginSettings
-							pluginManager={pluginManager.current}
-							onSettingsChanged={() => {
-								setChangeDetected(true)
-							}}
-						/>
+						<div className="max-w-[1200px] mx-auto">
+							<PluginSettings
+								pluginManager={pluginManager.current}
+								onSettingsChanged={() => setChangeDetected(true)}
+							/>
+						</div>
+					)}
+					
+					{/* Wizard Tab Content */}
+					{activeTab === "wizard" && (
+						<div className="max-w-[1200px] mx-auto">
+							<PluginWizard
+								onClose={() => handleTabChange("installed")}
+								onSave={async (plugin) => {
+									// Install the plugin
+									try {
+										const result = await PluginExtensionIntegration.installPlugin(plugin)
+										if (result.success) {
+											// Don't automatically navigate away, the wizard has its own "Complete" step
+											// that will navigate when the user clicks the button
+											setChangeDetected(true)
+											loadPlugins() // Refresh plugins list
+										} else {
+											setErrorMessage(result.error || "Failed to install plugin")
+										}
+									} catch (error) {
+										setErrorMessage(error instanceof Error ? error.message : "Unknown error installing plugin")
+									}
+								}}
+							/>
+						</div>
 					)}
 				</TabContent>
 			</div>
-
-			{/* Plugin Wizard Dialog */}
-			{showWizard && (
-				<PluginWizard
-					onClose={() => setShowWizard(false)}
-					onSave={async (plugin) => {
-						// Install the plugin
-						try {
-							const result = await PluginExtensionIntegration.installPlugin(plugin)
-							if (result.success) {
-								setShowWizard(false)
-								setChangeDetected(true)
-								loadPlugins() // Refresh plugins list
-							} else {
-								setErrorMessage(result.error || "Failed to install plugin")
-							}
-						} catch (error) {
-							setErrorMessage(error instanceof Error ? error.message : "Unknown error installing plugin")
-						}
-					}}
-				/>
-			)}
 
 			{/* Unsaved Changes Dialog */}
 			<AlertDialog open={isDiscardDialogShow} onOpenChange={setDiscardDialogShow}>

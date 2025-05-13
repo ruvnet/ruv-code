@@ -1,0 +1,17 @@
+{
+  "slug": "{{slug}}",
+  "name": "{{name}}",
+  "description": "{{description}}",
+  "version": "1.0.0",
+  "enabled": {{enabled}},
+  {{#if roleDefinition}}
+  "roleDefinition": "{{roleDefinition}}",
+  {{/if}}
+  {{#if customInstructions}}
+  "customInstructions": "{{customInstructions}}",
+  {{/if}}
+  {{#if groups}}
+  "groups": {{groups}},
+  {{/if}}
+  "main": "index.js"
+}
