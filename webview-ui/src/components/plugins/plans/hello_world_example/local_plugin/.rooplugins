@@ -1,0 +1,14 @@
+{
+  "plugins": [
+    {
+      "slug": "hello-world",
+      "name": "Hello World",
+      "roleDefinition": "A simple plugin that demonstrates the basic capabilities of the Roo Code Plugin System.",
+      "groups": ["command"],
+      "customInstructions": "This plugin accepts an optional name parameter and returns a time-appropriate greeting.",
+      "location": "local",
+      "path": ".roo/plugins/hello-world/index.js",
+      "enabled": true
+    }
+  ]
+}

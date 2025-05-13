@@ -106,6 +106,19 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 			return openClineInNewTab({ context, outputChannel })
 		},
 		"roo-cline.openInNewTab": () => openClineInNewTab({ context, outputChannel }),
+		"roo-cline.pluginsButtonClicked": () => {
+			const visibleProvider = getVisibleProviderOrLog(outputChannel)
+
+			if (!visibleProvider) {
+				return
+			}
+
+			telemetryService.captureTitleButtonClicked("plugins")
+
+			visibleProvider.postMessageToWebview({ type: "action", action: "pluginsButtonClicked" })
+			// Also explicitly post the visibility message to trigger scroll reliably
+			visibleProvider.postMessageToWebview({ type: "action", action: "didBecomeVisible" })
+		},
 		"roo-cline.settingsButtonClicked": () => {
 			const visibleProvider = getVisibleProviderOrLog(outputChannel)
 

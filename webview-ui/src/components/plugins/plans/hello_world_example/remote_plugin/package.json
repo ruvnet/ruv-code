@@ -1,0 +1,18 @@
+{
+  "name": "roo-hello-plugin",
+  "version": "1.0.0",
+  "description": "A Hello World plugin for Roo Code demonstrating NPX integration",
+  "main": "index.js",
+  "bin": {
+    "roo-hello-plugin": "./index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["roo", "plugin", "hello-world", "npx"],
+  "author": "Roo Code",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^4.1.2"
+  }
+}

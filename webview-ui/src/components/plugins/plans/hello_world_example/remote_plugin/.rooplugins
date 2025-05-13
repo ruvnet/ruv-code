@@ -1,0 +1,14 @@
+{
+  "plugins": [
+    {
+      "slug": "roo-hello-remote",
+      "name": "Roo Hello (Remote)",
+      "roleDefinition": "A Hello World plugin for Roo Code demonstrating NPX integration",
+      "groups": ["command"],
+      "customInstructions": "This plugin accepts an optional name parameter and returns a colorful greeting.",
+      "location": "remote",
+      "package": "roo-hello-plugin",
+      "enabled": true
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "name": "hello-world-plugin",
+  "version": "1.0.0",
+  "description": "A simple Hello World plugin for Roo Code",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["roo", "plugin", "hello-world"],
+  "author": "Roo Code",
+  "license": "MIT"
+}
