@@ -300,4 +300,48 @@ export class PluginExtensionIntegration {
       };
     }
   }
+
+  /**
+   * Create a plugin using the SPARC CLI scaffolding tool
+   * @param plugin The plugin entry to create
+   * @returns Promise with result of the operation
+   */
+  static async createSparcPlugin(plugin: RooPluginEntry): Promise<{ success: boolean; error?: string }> {
+    try {
+      vscode.postMessage({
+        type: 'createSparcPlugin',
+        plugin
+      });
+      
+      // Setup a listener for the response
+      return new Promise((resolve) => {
+        const listener = (event: MessageEvent) => {
+          const message = event.data;
+          if (message.type === 'createSparcPluginResponse') {
+            window.removeEventListener('message', listener);
+            resolve({
+              success: message.success,
+              error: message.error
+            });
+          }
+        };
+        
+        window.addEventListener('message', listener);
+        
+        // Add a timeout to prevent infinite waiting
+        setTimeout(() => {
+          window.removeEventListener('message', listener);
+          resolve({
+            success: false,
+            error: 'Timeout waiting for response'
+          });
+        }, 30000); // 30-second timeout
+      });
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
+      };
+    }
+  }
 }

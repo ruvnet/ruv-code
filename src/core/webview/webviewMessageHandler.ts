@@ -1254,6 +1254,32 @@ export const webviewMessageHandler = async (provider: ClineProvider, message: We
 			await provider.postStateToWebview()
 			break
 		}
+case "createSparcPlugin": {
+			if (message.plugin) {
+				try {
+					// Import the SPARC CLI service
+					const { SparcCliService } = await import('../plugins/SparcCliService')
+					
+					// Initialize plugin using SPARC CLI
+					const result = await SparcCliService.runCreateSparcCommand(message.plugin)
+					
+					// Return result to webview
+					provider.postMessageToWebview({
+						type: "createSparcPluginResponse",
+						success: result.success,
+						error: result.error,
+					})
+				} catch (error) {
+					console.error("Error creating SPARC plugin:", error)
+					provider.postMessageToWebview({
+						type: "createSparcPluginResponse",
+						success: false,
+						error: error instanceof Error ? error.message : "Unknown error creating SPARC plugin"
+					})
+				}
+			}
+			break
+		}
 		case "scaffoldPluginInit": {
 			if (message.plugin) {
 				try {

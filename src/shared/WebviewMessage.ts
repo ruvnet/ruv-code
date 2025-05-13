@@ -132,9 +132,15 @@ export interface WebviewMessage {
 		| "setHistoryPreviewCollapsed"
 		// Plugin wizard scaffolding message types
 		| "scaffoldPluginInit"
+		| "scaffoldPluginInitResponse"
 		| "scaffoldPluginContent"
+		| "scaffoldPluginContentResponse"
 		| "registerPlugin"
+		| "registerPluginResponse"
 		| "scaffoldPluginFiles"
+		| "scaffoldPluginFilesResponse"
+		| "createSparcPlugin"
+		| "createSparcPluginResponse"
 	text?: string
 	disabled?: boolean
 	askResponse?: ClineAskResponse
