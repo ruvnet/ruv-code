@@ -1257,11 +1257,11 @@ export const webviewMessageHandler = async (provider: ClineProvider, message: We
 		case "scaffoldPluginInit": {
 			if (message.plugin) {
 				try {
-					// Import the plugin scaffold service
-					const { PluginScaffoldService } = await import('../plugins/PluginScaffoldService')
+					// Import the CLI plugin scaffold service
+					const { CliPluginScaffoldService } = await import('../plugins/CliPluginScaffoldService')
 					
 					// Initialize plugin directory
-					const result = await PluginScaffoldService.initializePlugin(message.plugin)
+					const result = await CliPluginScaffoldService.initializePlugin(message.plugin)
 					
 					// Return result to webview
 					provider.postMessageToWebview({
@@ -1283,11 +1283,11 @@ export const webviewMessageHandler = async (provider: ClineProvider, message: We
 		case "scaffoldPluginContent": {
 			if (message.plugin) {
 				try {
-					// Import the plugin scaffold service
-					const { PluginScaffoldService } = await import('../plugins/PluginScaffoldService')
+					// Import the CLI plugin scaffold service
+					const { CliPluginScaffoldService } = await import('../plugins/CliPluginScaffoldService')
 					
-					// Create plugin content
-					const result = await PluginScaffoldService.createPluginContent(message.plugin)
+					// Create plugin content using CLI approach
+					const result = await CliPluginScaffoldService.createPluginContent(message.plugin)
 					
 					// Return result to webview
 					provider.postMessageToWebview({
@@ -1336,11 +1336,11 @@ export const webviewMessageHandler = async (provider: ClineProvider, message: We
 		case "scaffoldPluginFiles": {
 			if (message.plugin) {
 				try {
-					// Import the plugin registry service
-					const { PluginRegistryService } = await import('../plugins/PluginRegistryService')
+					// Import the CLI plugin scaffold service
+					const { CliPluginScaffoldService } = await import('../plugins/CliPluginScaffoldService')
 					
 					// Execute all steps in one operation (legacy)
-					const result = await PluginRegistryService.scaffoldPluginFiles(message.plugin)
+					const result = await CliPluginScaffoldService.scaffoldPluginFiles(message.plugin)
 					
 					// Return result to webview
 					provider.postMessageToWebview({

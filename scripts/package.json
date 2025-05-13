@@ -1,0 +1,23 @@
+{
+  "name": "create-roo-plugin",
+  "version": "1.0.0",
+  "description": "CLI scaffolding tool for Roo plugins",
+  "main": "create-roo-plugin.js",
+  "bin": {
+    "create-roo-plugin": "./create-roo-plugin.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "roo",
+    "plugin",
+    "scaffold",
+    "cli"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
