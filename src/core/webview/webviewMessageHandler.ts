@@ -1386,5 +1386,36 @@ case "createSparcPlugin": {
 			}
 			break
 		}
+		case "executeNpxCommand": {
+			if (message.npxCommand) {
+				try {
+					// Import the NPX command service
+					const { NpxCommandService } = await import('../plugins/NpxCommandService')
+					
+					// Execute the NPX command
+					const result = await NpxCommandService.executeNpxCommand(
+						message.npxCommand,
+						message.args || [],
+						message.options || {}
+					)
+					
+					// Return result to webview
+					provider.postMessageToWebview({
+						type: "executeNpxCommandResponse",
+						success: result.success,
+						text: result.output,
+						error: result.error
+					})
+				} catch (error) {
+					console.error("Error executing NPX command:", error)
+					provider.postMessageToWebview({
+						type: "executeNpxCommandResponse",
+						success: false,
+						error: error instanceof Error ? error.message : "Unknown error executing NPX command"
+					})
+				}
+			}
+			break
+		}
 	}
 }

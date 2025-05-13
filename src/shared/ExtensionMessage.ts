@@ -74,6 +74,7 @@ export interface ExtensionMessage {
 		| "registerPluginResponse"
 		| "scaffoldPluginFilesResponse"
 		| "createSparcPluginResponse"
+		| "executeNpxCommandResponse"
 	text?: string
 	action?:
 		| "chatButtonClicked"

@@ -344,4 +344,57 @@ export class PluginExtensionIntegration {
       };
     }
   }
+
+  /**
+   * Execute an NPX command directly via terminal integration
+   * @param command The NPX command to execute
+   * @param args Additional arguments to pass to the command
+   * @param options Optional configuration options
+   * @returns Promise with result of the operation
+   */
+  static async executeNpxCommand(
+    command: string,
+    args: string[] = [],
+    options: { cwd?: string } = {}
+  ): Promise<{ success: boolean; output?: string; error?: string }> {
+    try {
+      vscode.postMessage({
+        type: 'executeNpxCommand',
+        npxCommand: command,
+        args,
+        options
+      });
+      
+      // Setup a listener for the response
+      return new Promise((resolve) => {
+        const listener = (event: MessageEvent) => {
+          const message = event.data;
+          if (message.type === 'executeNpxCommandResponse') {
+            window.removeEventListener('message', listener);
+            resolve({
+              success: message.success,
+              output: message.text,
+              error: message.error
+            });
+          }
+        };
+        
+        window.addEventListener('message', listener);
+        
+        // Add a timeout to prevent infinite waiting
+        setTimeout(() => {
+          window.removeEventListener('message', listener);
+          resolve({
+            success: false,
+            error: 'Timeout waiting for response'
+          });
+        }, 60000); // 60-second timeout for NPX commands
+      });
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error executing NPX command'
+      };
+    }
+  }
 }

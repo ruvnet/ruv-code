@@ -76,5 +76,8 @@
 	"installExistingPlugin": "Install Existing Plugin",
 	"installExistingPluginDescription": "Browse and install plugins from the registry",
 	"addPlugin": "Add Plugin",
-	"createFromWizard": "Create with Wizard"
+	"createFromWizard": "Create with Wizard",
+	"testNpxCreateSparc": "Test npx create-sparc",
+	"testNpxCreateSparcDescription": "Run 'npx create-sparc init --force' to test the plugin creation system",
+	"testing": "Testing..."
 }

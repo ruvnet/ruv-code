@@ -141,6 +141,8 @@ export interface WebviewMessage {
 		| "scaffoldPluginFilesResponse"
 		| "createSparcPlugin"
 		| "createSparcPluginResponse"
+		| "executeNpxCommand"
+		| "executeNpxCommandResponse"
 	text?: string
 	disabled?: boolean
 	askResponse?: ClineAskResponse
@@ -171,6 +173,9 @@ export interface WebviewMessage {
 	terminalOperation?: "continue" | "abort"
 	historyPreviewCollapsed?: boolean
 	plugin?: RooPluginEntry
+	npxCommand?: string
+	args?: string[]
+	options?: { cwd?: string }
 }
 
 // Plugin schemas

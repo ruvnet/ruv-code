@@ -1,13 +1,16 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { 
   Download, 
   PlusCircle, 
   Wand2,
   Package,
-  ExternalLink
+  ExternalLink,
+  Terminal,
+  Loader
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { SparcCliService } from './services/SparcCliService'
 
 interface PluginWelcomeScreenProps {
   onAddPlugin: () => void
@@ -19,17 +22,80 @@ export const PluginWelcomeScreen: React.FC<PluginWelcomeScreenProps> = ({
   onOpenWizard
 }) => {
   const { t } = useAppTranslation()
+  const [isTestingNpx, setIsTestingNpx] = useState(false)
+  const [testOutput, setTestOutput] = useState<string | null>(null)
+  const [testError, setTestError] = useState<string | null>(null)
+
+  const handleTestNpxClick = async () => {
+    setIsTestingNpx(true)
+    setTestOutput(null)
+    setTestError(null)
+
+    try {
+      const result = await SparcCliService.testCreateSparc()
+      if (result.success) {
+        setTestOutput(result.output || "Command executed successfully!")
+      } else {
+        setTestError(result.error || "Failed to execute command")
+      }
+    } catch (error) {
+      setTestError(error instanceof Error ? error.message : "An unknown error occurred")
+    } finally {
+      setIsTestingNpx(false)
+    }
+  }
 
   return (
     <div className="max-w-[1000px] mx-auto bg-vscode-editor-background rounded-lg border border-vscode-panelBorder p-6 my-4">
-      <div className="text-center mb-8">
+      <div className="text-center mb-6">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-vscode-button-background mb-4">
           <Package className="w-8 h-8" />
         </div>
-        <h2 className="text-xl font-medium mb-2">{t("common:welcomeToPlugins", "Welcome to Roo Plugins")}</h2>
+        <h2 className="text-xl font-medium mb-2">{t("welcomeToPlugins")}</h2>
         <p className="text-vscode-descriptionForeground">
-          {t("common:pluginsDescription", "Extend Roo's capabilities with plugins that add new features, integrations, and tools.")}
+          {t("pluginsDescription")}
         </p>
+      </div>
+
+      {/* Test npx create-sparc button */}
+      <div className="mb-6 bg-vscode-editorWidget-background p-4 rounded-md border border-vscode-panelBorder">
+        <div className="flex flex-col items-center text-center">
+          <div className="bg-vscode-button-background rounded-full p-2 mb-3">
+            <Terminal className="w-6 h-6" />
+          </div>
+          <h3 className="font-medium mb-1">{t("testNpxCreateSparc", { defaultValue: "Test Plugin Creation" })}</h3>
+          <p className="text-sm text-vscode-descriptionForeground mb-3">
+            {t("testNpxCreateSparcDescription", { defaultValue: "Run 'npx create-sparc init --force' to test the plugin creation system" })}
+          </p>
+          <Button 
+            size="default" 
+            className="flex items-center"
+            onClick={handleTestNpxClick}
+            disabled={isTestingNpx}
+          >
+            {isTestingNpx ? (
+              <>
+                <Loader className="w-4 h-4 mr-2 animate-spin" />
+                {t("testing", { defaultValue: "Testing..." })}
+              </>
+            ) : (
+              <>
+                <Terminal className="w-4 h-4 mr-2" />
+                {t("testNpxCreateSparc", { defaultValue: "Test npx create-sparc" })}
+              </>
+            )}
+          </Button>
+
+          {/* Display the test output or error */}
+          {(testOutput || testError) && (
+            <div className="mt-4 w-full">
+              <div className={`p-3 rounded text-sm font-mono max-h-40 overflow-y-auto ${testError ? 'bg-vscode-errorBackground text-vscode-errorForeground' : 'bg-vscode-editor-background'}`}>
+                {testOutput && <div>{testOutput}</div>}
+                {testError && <div>Error: {testError}</div>}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -39,9 +105,9 @@ export const PluginWelcomeScreen: React.FC<PluginWelcomeScreenProps> = ({
               <Wand2 className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-medium mb-1">{t("common:createAPlugin", "Create a Plugin")}</h3>
+              <h3 className="font-medium mb-1">{t("createAPlugin")}</h3>
               <p className="text-sm text-vscode-descriptionForeground mb-3">
-                {t("common:createPluginDescription", "Create your own plugin to extend Roo's capabilities or solve specific problems.")}
+                {t("createPluginDescription")}
               </p>
               <Button 
                 size="sm" 
@@ -49,7 +115,7 @@ export const PluginWelcomeScreen: React.FC<PluginWelcomeScreenProps> = ({
                 onClick={onOpenWizard}
               >
                 <PlusCircle className="w-4 h-4 mr-1" />
-                {t("common:createPlugin", "Create Plugin")}
+                {t("createPlugin")}
               </Button>
             </div>
           </div>
@@ -61,9 +127,9 @@ export const PluginWelcomeScreen: React.FC<PluginWelcomeScreenProps> = ({
               <Download className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-medium mb-1">{t("common:browseRegistry", "Browse Registry")}</h3>
+              <h3 className="font-medium mb-1">{t("browseRegistry")}</h3>
               <p className="text-sm text-vscode-descriptionForeground mb-3">
-                {t("common:browseRegistryDescription", "Discover and install pre-built plugins from the registry.")}
+                {t("browseRegistryDescription")}
               </p>
               <Button 
                 size="sm" 
@@ -72,7 +138,7 @@ export const PluginWelcomeScreen: React.FC<PluginWelcomeScreenProps> = ({
                 onClick={onAddPlugin}
               >
                 <Download className="w-4 h-4 mr-1" />
-                {t("common:browseRegistry", "Browse Registry")}
+                {t("browseRegistry")}
               </Button>
             </div>
           </div>
@@ -80,9 +146,9 @@ export const PluginWelcomeScreen: React.FC<PluginWelcomeScreenProps> = ({
       </div>
 
       <div className="bg-vscode-editorWidget-background p-4 rounded-md border border-vscode-panelBorder">
-        <h3 className="font-medium mb-2">{t("common:learnMore", "Learn More")}</h3>
+        <h3 className="font-medium mb-2">{t("learnMore")}</h3>
         <p className="text-sm text-vscode-descriptionForeground mb-3">
-          {t("common:pluginDocumentation", "Find out more about how plugins work and how to create your own.")}
+          {t("pluginDocumentation")}
         </p>
         <div className="flex flex-col sm:flex-row gap-3">
           <Button 
@@ -92,7 +158,7 @@ export const PluginWelcomeScreen: React.FC<PluginWelcomeScreenProps> = ({
             onClick={() => window.open('https://example.com/roo-plugins-docs', '_blank')}
           >
             <ExternalLink className="w-4 h-4 mr-1" />
-            {t("common:pluginDocumentation", "Plugin Documentation")}
+            {t("pluginDocumentation")}
           </Button>
           <Button 
             variant="outline" 
@@ -101,7 +167,7 @@ export const PluginWelcomeScreen: React.FC<PluginWelcomeScreenProps> = ({
             onClick={() => window.open('https://example.com/roo-plugins-examples', '_blank')}
           >
             <ExternalLink className="w-4 h-4 mr-1" />
-            {t("common:examplePlugins", "Example Plugins")}
+            {t("examplePlugins")}
           </Button>
           <Button 
             variant="outline" 
@@ -110,13 +176,13 @@ export const PluginWelcomeScreen: React.FC<PluginWelcomeScreenProps> = ({
             onClick={() => window.open('https://example.com/roo-plugins-api', '_blank')}
           >
             <ExternalLink className="w-4 h-4 mr-1" />
-            {t("common:pluginAPI", "Plugin API Reference")}
+            {t("pluginAPI")}
           </Button>
         </div>
       </div>
 
       <div className="mt-6 text-center text-sm text-vscode-descriptionForeground">
-        <p>{t("common:pluginSecurityNote", "Plugins can access your workspace and perform actions on your behalf. Only install plugins from trusted sources.")}</p>
+        <p>{t("pluginSecurityNote")}</p>
       </div>
     </div>
   )

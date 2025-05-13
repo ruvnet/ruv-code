@@ -30,6 +30,9 @@ import {
 // Import RooPlugin schema to convert form to plugin entry
 import { RooPluginEntry } from '../schemas/plugin-schema';
 
+// Import the test button component
+import { PluginTestButton } from '../PluginTestButton';
+
 /**
  * The PluginWizard component that guides users through creating a new plugin
  * with improved chunked scaffolding to prevent timeouts
@@ -298,6 +301,15 @@ export const PluginWizard: React.FC<PluginWizardProps> = ({ onClose, onSave }) =
           <div>Plugin Wizard</div>
         </div>
       </SectionHeader>
+
+      {/* NPX Test Button */}
+      <div className="mb-4 p-2 bg-vscode-editor-background border border-vscode-panelBorder rounded-md">
+        <h3 className="text-sm font-semibold mb-2">Quick NPX Test</h3>
+        <p className="text-xs text-vscode-descriptionForeground mb-2">
+          Test the npx command approach directly by running "npx create-sparc init --force"
+        </p>
+        <PluginTestButton />
+      </div>
 
       <Section>
         {/* Steps indicator */}
