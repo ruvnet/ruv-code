@@ -130,6 +130,11 @@ export interface WebviewMessage {
 		| "searchFiles"
 		| "toggleApiConfigPin"
 		| "setHistoryPreviewCollapsed"
+		// Plugin wizard scaffolding message types
+		| "scaffoldPluginInit"
+		| "scaffoldPluginContent"
+		| "registerPlugin"
+		| "scaffoldPluginFiles"
 	text?: string
 	disabled?: boolean
 	askResponse?: ClineAskResponse
@@ -159,6 +164,36 @@ export interface WebviewMessage {
 	hasSystemPromptOverride?: boolean
 	terminalOperation?: "continue" | "abort"
 	historyPreviewCollapsed?: boolean
+	plugin?: RooPluginEntry
+}
+
+// Plugin schemas
+export interface RooPluginCommon {
+	slug: string
+	name: string
+	enabled: boolean
+	description?: string
+	roleDefinition?: string
+	customInstructions?: string
+	groups?: string[]
+}
+
+export interface RooRemotePlugin extends RooPluginCommon {
+	location: "remote"
+	package: string
+}
+
+export interface RooLocalPlugin extends RooPluginCommon {
+	location: "local"
+	path: string
+}
+
+export type RooPluginEntry = RooRemotePlugin | RooLocalPlugin
+
+export interface ScaffoldResult {
+	success: boolean
+	error?: string
+	partialSuccess?: boolean
 }
 
 export const checkoutDiffPayloadSchema = z.object({

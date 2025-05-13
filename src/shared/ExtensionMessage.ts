@@ -69,6 +69,10 @@ export interface ExtensionMessage {
 		| "setHistoryPreviewCollapsed"
 		| "commandExecutionStatus"
 		| "vsCodeSetting"
+		| "scaffoldPluginInitResponse"
+		| "scaffoldPluginContentResponse"
+		| "registerPluginResponse"
+		| "scaffoldPluginFilesResponse"
 	text?: string
 	action?:
 		| "chatButtonClicked"
@@ -101,6 +105,7 @@ export interface ExtensionMessage {
 	customMode?: ModeConfig
 	slug?: string
 	success?: boolean
+	partialSuccess?: boolean
 	values?: Record<string, any>
 	requestId?: string
 	promptText?: string

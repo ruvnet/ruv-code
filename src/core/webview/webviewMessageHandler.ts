@@ -1254,5 +1254,111 @@ export const webviewMessageHandler = async (provider: ClineProvider, message: We
 			await provider.postStateToWebview()
 			break
 		}
+		case "scaffoldPluginInit": {
+			if (message.plugin) {
+				try {
+					// Import the plugin scaffold service
+					const { PluginScaffoldService } = await import('../plugins/PluginScaffoldService')
+					
+					// Initialize plugin directory
+					const result = await PluginScaffoldService.initializePlugin(message.plugin)
+					
+					// Return result to webview
+					provider.postMessageToWebview({
+						type: "scaffoldPluginInitResponse",
+						success: result.success,
+						error: result.error,
+					})
+				} catch (error) {
+					console.error("Error initializing plugin:", error)
+					provider.postMessageToWebview({
+						type: "scaffoldPluginInitResponse",
+						success: false,
+						error: error instanceof Error ? error.message : "Unknown error initializing plugin"
+					})
+				}
+			}
+			break
+		}
+		case "scaffoldPluginContent": {
+			if (message.plugin) {
+				try {
+					// Import the plugin scaffold service
+					const { PluginScaffoldService } = await import('../plugins/PluginScaffoldService')
+					
+					// Create plugin content
+					const result = await PluginScaffoldService.createPluginContent(message.plugin)
+					
+					// Return result to webview
+					provider.postMessageToWebview({
+						type: "scaffoldPluginContentResponse",
+						success: result.success,
+						partialSuccess: result.partialSuccess,
+						error: result.error,
+					})
+				} catch (error) {
+					console.error("Error creating plugin content:", error)
+					provider.postMessageToWebview({
+						type: "scaffoldPluginContentResponse",
+						success: false,
+						error: error instanceof Error ? error.message : "Unknown error creating plugin content"
+					})
+				}
+			}
+			break
+		}
+		case "registerPlugin": {
+			if (message.plugin) {
+				try {
+					// Import the plugin registry service
+					const { PluginRegistryService } = await import('../plugins/PluginRegistryService')
+					
+					// Register plugin in manifest
+					const result = await PluginRegistryService.registerPlugin(message.plugin)
+					
+					// Return result to webview
+					provider.postMessageToWebview({
+						type: "registerPluginResponse",
+						success: result.success,
+						error: result.error,
+					})
+				} catch (error) {
+					console.error("Error registering plugin:", error)
+					provider.postMessageToWebview({
+						type: "registerPluginResponse",
+						success: false,
+						error: error instanceof Error ? error.message : "Unknown error registering plugin"
+					})
+				}
+			}
+			break
+		}
+		case "scaffoldPluginFiles": {
+			if (message.plugin) {
+				try {
+					// Import the plugin registry service
+					const { PluginRegistryService } = await import('../plugins/PluginRegistryService')
+					
+					// Execute all steps in one operation (legacy)
+					const result = await PluginRegistryService.scaffoldPluginFiles(message.plugin)
+					
+					// Return result to webview
+					provider.postMessageToWebview({
+						type: "scaffoldPluginFilesResponse",
+						success: result.success,
+						partialSuccess: result.partialSuccess,
+						error: result.error,
+					})
+				} catch (error) {
+					console.error("Error scaffolding plugin files:", error)
+					provider.postMessageToWebview({
+						type: "scaffoldPluginFilesResponse",
+						success: false,
+						error: error instanceof Error ? error.message : "Unknown error scaffolding plugin files"
+					})
+				}
+			}
+			break
+		}
 	}
 }
