@@ -49,7 +49,6 @@ const InboxWelcomeView: React.FC<InboxWelcomeViewProps> = ({ onCreateTask }) => 
     }
   }, [])
   
-  // We don't need imagesBaseUri here as RooHero component handles this internally
   return (
     <div 
       ref={containerRef}
@@ -71,39 +70,49 @@ const InboxWelcomeView: React.FC<InboxWelcomeViewProps> = ({ onCreateTask }) => 
           improving your workflow productivity.
         </p>
         
-        <div className="space-y-2 sm:space-y-3 mb-4">
-          <div className="flex items-start">
-            <span className="codicon codicon-multiple-windows text-lg mr-2 mt-0.5 text-vscode-descriptionForeground"></span>
-            <div>
-              <h4 className="font-medium text-vscode-foreground">Concurrent Execution</h4>
-              <p className="text-sm text-vscode-descriptionForeground">Run multiple AI tasks in parallel without blocking your main workflow</p>
-            </div>
-          </div>
-          
-          <div className="flex items-start">
-            <span className="codicon codicon-list-tree text-lg mr-2 mt-0.5 text-vscode-descriptionForeground"></span>
-            <div>
-              <h4 className="font-medium text-vscode-foreground">Task Hierarchy</h4>
-              <p className="text-sm text-vscode-descriptionForeground">Create subtasks that can work independently while maintaining context</p>
-            </div>
-          </div>
-          
-          <div className="flex items-start">
-            <span className="codicon codicon-references text-lg mr-2 mt-0.5 text-vscode-descriptionForeground"></span>
-            <div>
-              <h4 className="font-medium text-vscode-foreground">Context Awareness</h4>
-              <p className="text-sm text-vscode-descriptionForeground">Tasks maintain access to relevant context while operating independently</p>
-            </div>
-          </div>
-          
-          <div className="flex items-start">
-            <span className="codicon codicon-dashboard text-lg mr-2 mt-0.5 text-vscode-descriptionForeground"></span>
-            <div>
-              <h4 className="font-medium text-vscode-foreground">Progress Monitoring</h4>
-              <p className="text-sm text-vscode-descriptionForeground">Track the status and progress of all running tasks from a central dashboard</p>
-            </div>
-          </div>
-        </div>
+        <table className="w-full mb-4 border-collapse">
+          <tbody>
+            <tr className="mb-2 border-b border-transparent">
+              <td className="w-12 pr-3 align-middle">
+                <span className="codicon codicon-dashboard text-vscode-descriptionForeground block" style={{ fontSize: '3rem' }}></span>
+              </td>
+              <td className="pb-3">
+                <h4 className="font-medium text-vscode-foreground mb-1">Concurrent Execution</h4>
+                <p className="text-sm text-vscode-descriptionForeground">Run multiple AI tasks in parallel without blocking your main workflow</p>
+              </td>
+            </tr>
+            
+            <tr className="mb-2 border-b border-transparent">
+              <td className="w-12 pr-3 align-middle">
+                <span className="codicon codicon-multiple-windows text-vscode-descriptionForeground block" style={{ fontSize: '3rem' }}></span>
+              </td>
+              <td className="pb-3">
+                <h4 className="font-medium text-vscode-foreground mb-1">Task Hierarchy</h4>
+                <p className="text-sm text-vscode-descriptionForeground">Create subtasks that can work independently while maintaining context</p>
+              </td>
+            </tr>
+            
+            <tr className="mb-2 border-b border-transparent">
+              <td className="w-12 pr-3 align-middle">
+                <span className="codicon codicon-references text-vscode-descriptionForeground block" style={{ fontSize: '3rem' }}></span>
+              </td>
+              <td className="pb-3">
+                <h4 className="font-medium text-vscode-foreground mb-1">Context Awareness</h4>
+                <p className="text-sm text-vscode-descriptionForeground">Tasks maintain access to relevant context while operating independently</p>
+              </td>
+            </tr>
+            
+            <tr className="border-b border-transparent">
+              <td className="w-12 pr-3 align-middle">
+                <span className="codicon codicon-list-tree text-vscode-descriptionForeground block" style={{ fontSize: '3rem' }}></span>
+              </td>
+              <td className="pb-3">
+                <h4 className="font-medium text-vscode-foreground mb-1">Progress Monitoring</h4>
+                <p className="text-sm text-vscode-descriptionForeground">Track the status and progress of all running tasks from a central dashboard</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
         
         <div className="bg-vscode-panel-background p-3 rounded border border-vscode-panel-border">
           <h4 className="font-medium mb-1 text-vscode-foreground">When to use the Agentic Inbox:</h4>
