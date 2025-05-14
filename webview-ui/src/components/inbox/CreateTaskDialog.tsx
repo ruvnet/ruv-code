@@ -2,6 +2,7 @@ import React, { useState, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { getAllModes } from "@roo/shared/modes"
 import { TaskState } from "./InboxSidebar"
+import AdvancedTab from "./AdvancedTab"
 import {
   Dialog,
   DialogContent,
@@ -83,6 +84,13 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = ({
   const [flowType, setFlowType] = useState<FlowType>("sequential");
   const [dependencies, setDependencies] = useState<string[]>([]);
   
+  // Advanced tab state
+  const [dueDate, setDueDate] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
+  const [reminders, setReminders] = useState(false);
+  const [recurrence, setRecurrence] = useState("none");
+  const [estimatedTime, setEstimatedTime] = useState("medium");
+  
   // Reset form when dialog opens
   React.useEffect(() => {
     if (open) {
@@ -98,6 +106,13 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = ({
       setNewSubtaskName("");
       setFlowType("sequential");
       setDependencies([]);
+      
+      // Reset Advanced tab
+      setDueDate("");
+      setTags([]);
+      setReminders(false);
+      setRecurrence("none");
+      setEstimatedTime("medium");
       
       // Reset active tab
       setActiveTab("basic");
@@ -150,8 +165,15 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = ({
         ? `\n\n### Workflow\n**Flow Type:** ${flowType}${dependencies.length > 0 ? `\n**Dependencies:** ${dependencies.join(', ')}` : ''}`
         : '';
       
-      // No advanced options to include
-      const advancedContent = '';
+      // Format advanced options
+      const tagsContent = tags.length > 0 ? `\n**Tags:** ${tags.join(', ')}` : '';
+      const dueDateContent = dueDate ? `\n**Due Date:** ${dueDate}` : '';
+      const reminderContent = reminders ? `\n**Reminders:** Enabled` : '';
+      const recurrenceContent = recurrence !== 'none' ? `\n**Recurrence:** ${recurrence}` : '';
+      const timeContent = estimatedTime !== 'medium' ? `\n**Time Estimate:** ${estimatedTime}` : '';
+      
+      // Combine all advanced options
+      const advancedContent = tagsContent + dueDateContent + reminderContent + recurrenceContent + timeContent;
       
       // Include all information in the task content
       const taskContent = `# ${taskName}\n\n${description}\n\n**Priority:** ${priority}\n**State:** ${state}\n**Mode:** ${selectedMode}${subtasksContent}${workflowContent}${advancedContent}`;
@@ -182,8 +204,13 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = ({
     state, 
     selectedMode, 
     subtasks, 
-    flowType, 
+    flowType,
     dependencies,
+    dueDate,
+    tags,
+    reminders,
+    recurrence,
+    estimatedTime,
     onOpenChange
   ]);
   
@@ -451,27 +478,20 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = ({
               </div>
             </>
           )}
-          
-          {/* Advanced Tab Content - Extremely simplified to prevent errors */}
+          {/* Advanced Tab Content */}
           {activeTab === "advanced" && (
-            <div className="flex flex-col items-center justify-center p-8 text-center">
-              <div className="w-16 h-16 mb-4 text-vscode-editorWarning-foreground flex items-center justify-center">
-                <Settings className="w-10 h-10" />
-              </div>
-              <h3 className="text-lg font-medium mb-2">Advanced Features Coming Soon</h3>
-              <p className="text-vscode-descriptionForeground mb-6">
-                The advanced task settings are currently under development.
-                <br />
-                Please use the Basic and Tasks tabs for now.
-              </p>
-              <Button 
-                variant="secondary" 
-                onClick={() => setActiveTab("basic")}
-                className="mt-2"
-              >
-                Go back to Basic tab
-              </Button>
-            </div>
+            <AdvancedTab
+              dueDate={dueDate}
+              setDueDate={setDueDate}
+              tags={tags}
+              setTags={setTags}
+              reminders={reminders}
+              setReminders={setReminders}
+              recurrence={recurrence}
+              setRecurrence={setRecurrence}
+              estimatedTime={estimatedTime}
+              setEstimatedTime={setEstimatedTime}
+            />
           )}
         </div>
         
