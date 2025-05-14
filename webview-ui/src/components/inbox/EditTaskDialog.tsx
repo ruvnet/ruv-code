@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { getAllModes } from "@roo/shared/modes"
 import { TaskState } from "./InboxSidebar"
+import AdvancedTab from "./AdvancedTab"
 import {
   Dialog,
   DialogContent,
@@ -62,6 +63,13 @@ interface EditTaskDialogProps {
   taskSubtasks?: Subtask[];
   taskFlowType?: FlowType;
   taskDependencies?: string[];
+  // Advanced tab props
+  taskDueDate?: string;
+  taskTags?: string[];
+  taskReminders?: boolean;
+  taskRecurrence?: string;
+  taskEstimatedTime?: string;
+  // Legacy advanced options
   taskPromptTemplate?: string;
   taskExecutionOptions?: {
     autoStart: boolean;
@@ -81,6 +89,11 @@ const EditTaskDialog: React.FC<EditTaskDialogProps> = ({
   taskSubtasks = [],
   taskFlowType = "sequential",
   taskDependencies = [],
+  taskDueDate = "",
+  taskTags = [],
+  taskReminders = false,
+  taskRecurrence = "none",
+  taskEstimatedTime = "medium",
   taskPromptTemplate = "",
   taskExecutionOptions = { autoStart: false, notifyOnCompletion: true }
 }) => {
@@ -104,6 +117,13 @@ const EditTaskDialog: React.FC<EditTaskDialogProps> = ({
   const [dependencies, setDependencies] = useState<string[]>(taskDependencies);
   
   // Advanced tab state
+  const [dueDate, setDueDate] = useState(taskDueDate);
+  const [tags, setTags] = useState<string[]>(taskTags);
+  const [reminders, setReminders] = useState(taskReminders);
+  const [recurrence, setRecurrence] = useState(taskRecurrence);
+  const [estimatedTime, setEstimatedTime] = useState(taskEstimatedTime);
+  
+  // Legacy advanced options
   const [promptTemplate, setPromptTemplate] = useState(taskPromptTemplate);
   const [executionOptions, setExecutionOptions] = useState(taskExecutionOptions);
   
@@ -124,6 +144,13 @@ const EditTaskDialog: React.FC<EditTaskDialogProps> = ({
       setDependencies(taskDependencies);
       
       // Reset Advanced tab
+      setDueDate(taskDueDate);
+      setTags(taskTags);
+      setReminders(taskReminders);
+      setRecurrence(taskRecurrence);
+      setEstimatedTime(taskEstimatedTime);
+      
+      // Reset legacy advanced options
       setPromptTemplate(taskPromptTemplate);
       setExecutionOptions(taskExecutionOptions);
       
@@ -140,8 +167,13 @@ const EditTaskDialog: React.FC<EditTaskDialogProps> = ({
     mode, 
     taskSubtasks, 
     taskFlowType, 
-    taskDependencies, 
-    taskPromptTemplate, 
+    taskDependencies,
+    taskDueDate,
+    taskTags,
+    taskReminders,
+    taskRecurrence,
+    taskEstimatedTime,
+    taskPromptTemplate,
     taskExecutionOptions
   ]);
   
@@ -191,13 +223,23 @@ const EditTaskDialog: React.FC<EditTaskDialogProps> = ({
       : '';
     
     // Format advanced options
-    const advancedContent = promptTemplate || executionOptions.autoStart || executionOptions.notifyOnCompletion
-      ? `\n\n### Advanced Options\n${promptTemplate ? `**Prompt Template:** ${promptTemplate}\n` : ''}**Auto Start:** ${executionOptions.autoStart}\n**Notify on Completion:** ${executionOptions.notifyOnCompletion}`
+    const tagsContent = tags.length > 0 ? `\n**Tags:** ${tags.join(', ')}` : '';
+    const dueDateContent = dueDate ? `\n**Due Date:** ${dueDate}` : '';
+    const reminderContent = reminders ? `\n**Reminders:** Enabled` : '';
+    const recurrenceContent = recurrence !== 'none' ? `\n**Recurrence:** ${recurrence}` : '';
+    const timeContent = estimatedTime !== 'medium' ? `\n**Time Estimate:** ${estimatedTime}` : '';
+    
+    // Combine all advanced options
+    const advancedContent = tagsContent + dueDateContent + reminderContent + recurrenceContent + timeContent;
+    
+    // Add legacy advanced options
+    const legacyAdvancedContent = promptTemplate || executionOptions.autoStart || executionOptions.notifyOnCompletion
+      ? `\n\n### Legacy Options\n${promptTemplate ? `**Prompt Template:** ${promptTemplate}\n` : ''}**Auto Start:** ${executionOptions.autoStart}\n**Notify on Completion:** ${executionOptions.notifyOnCompletion}`
       : '';
     
     // Include priority, state, mode and taskId information in the task content
     // We need to embed the taskId in the content since there's no specific field for it
-    const taskContent = `# ${title}\n\n${description}\n\n**Priority:** ${priority}\n**State:** ${state}\n**Mode:** ${selectedMode}\n**TaskId:** ${taskId}${subtasksContent}${workflowContent}${advancedContent}`;
+    const taskContent = `# ${title}\n\n${description}\n\n**Priority:** ${priority}\n**State:** ${state}\n**Mode:** ${selectedMode}\n**TaskId:** ${taskId}${subtasksContent}${workflowContent}${advancedContent}${legacyAdvancedContent}`;
     
     // Instead of creating a new task, we can use the showTaskWithId type which is available
     vscode.postMessage({
@@ -218,8 +260,13 @@ const EditTaskDialog: React.FC<EditTaskDialogProps> = ({
     subtasks, 
     flowType, 
     dependencies, 
-    promptTemplate, 
-    executionOptions, 
+    dueDate,
+    tags,
+    reminders,
+    recurrence,
+    estimatedTime,
+    promptTemplate,
+    executionOptions,
     onOpenChange
   ]);
   
@@ -490,78 +537,97 @@ const EditTaskDialog: React.FC<EditTaskDialogProps> = ({
           
           {/* Advanced Tab Content */}
           {activeTab === "advanced" && (
-            <>
-              {/* Prompt selection */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-vscode-foreground">
-                  Prompt Template
-                </label>
-                <Select value={promptTemplate} onValueChange={setPromptTemplate}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a prompt template" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">
-                      <div className="flex items-center">
-                        <span className="codicon codicon-edit mr-2" />
-                        Default (No Template)
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="code-review">
-                      <div className="flex items-center">
-                        <span className="codicon codicon-code mr-2" />
-                        Code Review
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="data-analysis">
-                      <div className="flex items-center">
-                        <span className="codicon codicon-graph mr-2" />
-                        Data Analysis
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="document-generation">
-                      <div className="flex items-center">
-                        <span className="codicon codicon-file-text mr-2" />
-                        Document Generation
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-4">
+              {/* New advanced options */}
+              <AdvancedTab
+                dueDate={dueDate}
+                setDueDate={setDueDate}
+                tags={tags}
+                setTags={setTags}
+                reminders={reminders}
+                setReminders={setReminders}
+                recurrence={recurrence}
+                setRecurrence={setRecurrence}
+                estimatedTime={estimatedTime}
+                setEstimatedTime={setEstimatedTime}
+              />
               
-              {/* Execution options */}
-              <div className="space-y-4">
-                <label className="text-sm font-medium text-vscode-foreground">
-                  Execution Options
-                </label>
+              {/* Legacy options section */}
+              <div className="mt-8 pt-4 border-t border-vscode-panel-border">
+                <h3 className="text-sm font-medium mb-4">Legacy Options</h3>
                 
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="auto-start"
-                    checked={executionOptions.autoStart}
-                    onCheckedChange={(checked) =>
-                      setExecutionOptions({...executionOptions, autoStart: checked === true})
-                    }
-                  />
-                  <label htmlFor="auto-start" className="text-sm cursor-pointer">
-                    Auto-start task after creation
+                {/* Prompt selection */}
+                <div className="space-y-2 mb-4">
+                  <label className="text-sm font-medium text-vscode-foreground">
+                    Prompt Template
                   </label>
+                  <Select value={promptTemplate} onValueChange={setPromptTemplate}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select a prompt template" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">
+                        <div className="flex items-center">
+                          <span className="codicon codicon-edit mr-2" />
+                          Default (No Template)
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="code-review">
+                        <div className="flex items-center">
+                          <span className="codicon codicon-code mr-2" />
+                          Code Review
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="data-analysis">
+                        <div className="flex items-center">
+                          <span className="codicon codicon-graph mr-2" />
+                          Data Analysis
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="document-generation">
+                        <div className="flex items-center">
+                          <span className="codicon codicon-file-text mr-2" />
+                          Document Generation
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="notify-completion"
-                    checked={executionOptions.notifyOnCompletion}
-                    onCheckedChange={(checked) =>
-                      setExecutionOptions({...executionOptions, notifyOnCompletion: checked === true})
-                    }
-                  />
-                  <label htmlFor="notify-completion" className="text-sm cursor-pointer">
-                    Notify when task completes
+                {/* Execution options */}
+                <div className="space-y-4">
+                  <label className="text-sm font-medium text-vscode-foreground">
+                    Execution Options
                   </label>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="auto-start"
+                      checked={executionOptions.autoStart}
+                      onCheckedChange={(checked) =>
+                        setExecutionOptions({...executionOptions, autoStart: checked === true})
+                      }
+                    />
+                    <label htmlFor="auto-start" className="text-sm cursor-pointer">
+                      Auto-start task after creation
+                    </label>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="notify-completion"
+                      checked={executionOptions.notifyOnCompletion}
+                      onCheckedChange={(checked) =>
+                        setExecutionOptions({...executionOptions, notifyOnCompletion: checked === true})
+                      }
+                    />
+                    <label htmlFor="notify-completion" className="text-sm cursor-pointer">
+                      Notify when task completes
+                    </label>
+                  </div>
                 </div>
               </div>
-            </>
+            </div>
           )}
         </div>
         
