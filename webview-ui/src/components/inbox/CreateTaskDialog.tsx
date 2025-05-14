@@ -83,13 +83,6 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = ({
   const [flowType, setFlowType] = useState<FlowType>("sequential");
   const [dependencies, setDependencies] = useState<string[]>([]);
   
-  // Advanced tab state
-  const [promptTemplate, setPromptTemplate] = useState("");
-  const [executionOptions, setExecutionOptions] = useState({
-    autoStart: false,
-    notifyOnCompletion: true
-  });
-  
   // Reset form when dialog opens
   React.useEffect(() => {
     if (open) {
@@ -105,13 +98,6 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = ({
       setNewSubtaskName("");
       setFlowType("sequential");
       setDependencies([]);
-      
-      // Reset Advanced tab
-      setPromptTemplate("");
-      setExecutionOptions({
-        autoStart: false,
-        notifyOnCompletion: true
-      });
       
       // Reset active tab
       setActiveTab("basic");
@@ -153,34 +139,42 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = ({
       return; // Don't create tasks without a name
     }
     
-    // Format subtasks if any
-    const subtasksContent = subtasks.length > 0
-      ? `\n\n### Subtasks\n${subtasks.map(st => `- [ ] ${st.name}`).join('\n')}`
-      : '';
-    
-    // Format flow type and dependencies
-    const workflowContent = flowType !== "sequential" || dependencies.length > 0
-      ? `\n\n### Workflow\n**Flow Type:** ${flowType}${dependencies.length > 0 ? `\n**Dependencies:** ${dependencies.join(', ')}` : ''}`
-      : '';
-    
-    // Format advanced options
-    const advancedContent = promptTemplate || executionOptions.autoStart || executionOptions.notifyOnCompletion
-      ? `\n\n### Advanced Options\n${promptTemplate ? `**Prompt Template:** ${promptTemplate}\n` : ''}**Auto Start:** ${executionOptions.autoStart}\n**Notify on Completion:** ${executionOptions.notifyOnCompletion}`
-      : '';
-    
-    // Include all information in the task content
-    const taskContent = `# ${taskName}\n\n${description}\n\n**Priority:** ${priority}\n**State:** ${state}\n**Mode:** ${selectedMode}${subtasksContent}${workflowContent}${advancedContent}`;
-    
-    // Create a new task using the existing messaging infrastructure
-    vscode.postMessage({
-      type: "newTask",
-      text: taskContent,
-      images: []
-      // State is embedded in the task content for the extension to parse
-    });
-    
-    // Close the dialog
-    onOpenChange(false);
+    try {
+      // Format subtasks if any
+      const subtasksContent = subtasks.length > 0
+        ? `\n\n### Subtasks\n${subtasks.map(st => `- [ ] ${st.name}`).join('\n')}`
+        : '';
+      
+      // Format flow type and dependencies
+      const workflowContent = flowType !== "sequential" || dependencies.length > 0
+        ? `\n\n### Workflow\n**Flow Type:** ${flowType}${dependencies.length > 0 ? `\n**Dependencies:** ${dependencies.join(', ')}` : ''}`
+        : '';
+      
+      // No advanced options to include
+      const advancedContent = '';
+      
+      // Include all information in the task content
+      const taskContent = `# ${taskName}\n\n${description}\n\n**Priority:** ${priority}\n**State:** ${state}\n**Mode:** ${selectedMode}${subtasksContent}${workflowContent}${advancedContent}`;
+      
+      // Create a new task using the existing messaging infrastructure
+      vscode.postMessage({
+        type: "newTask",
+        text: taskContent,
+        images: []
+        // State is embedded in the task content for the extension to parse
+      });
+      
+      // Close the dialog
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Error creating task:", error);
+      // Provide user feedback about the error using the showNotification type
+      vscode.postMessage({
+        type: "newTask",
+        text: "# Error Creating Task\n\nThe Advanced tab functionality is still in development.",
+        images: []
+      });
+    }
   }, [
     taskName, 
     description, 
@@ -189,9 +183,7 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = ({
     selectedMode, 
     subtasks, 
     flowType, 
-    dependencies, 
-    promptTemplate, 
-    executionOptions, 
+    dependencies,
     onOpenChange
   ]);
   
@@ -460,80 +452,26 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = ({
             </>
           )}
           
-          {/* Advanced Tab Content */}
+          {/* Advanced Tab Content - Extremely simplified to prevent errors */}
           {activeTab === "advanced" && (
-            <>
-              {/* Prompt selection */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-vscode-foreground">
-                  Prompt Template
-                </label>
-                <Select value={promptTemplate} onValueChange={setPromptTemplate}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a prompt template" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">
-                      <div className="flex items-center">
-                        <span className="codicon codicon-edit mr-2" />
-                        Default (No Template)
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="code-review">
-                      <div className="flex items-center">
-                        <span className="codicon codicon-code mr-2" />
-                        Code Review
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="data-analysis">
-                      <div className="flex items-center">
-                        <span className="codicon codicon-graph mr-2" />
-                        Data Analysis
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="document-generation">
-                      <div className="flex items-center">
-                        <span className="codicon codicon-file-text mr-2" />
-                        Document Generation
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+            <div className="flex flex-col items-center justify-center p-8 text-center">
+              <div className="w-16 h-16 mb-4 text-vscode-editorWarning-foreground flex items-center justify-center">
+                <Settings className="w-10 h-10" />
               </div>
-              
-              {/* Execution options */}
-              <div className="space-y-4">
-                <label className="text-sm font-medium text-vscode-foreground">
-                  Execution Options
-                </label>
-                
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="auto-start"
-                    checked={executionOptions.autoStart}
-                    onCheckedChange={(checked) =>
-                      setExecutionOptions({...executionOptions, autoStart: checked === true})
-                    }
-                  />
-                  <label htmlFor="auto-start" className="text-sm cursor-pointer">
-                    Auto-start task after creation
-                  </label>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="notify-completion"
-                    checked={executionOptions.notifyOnCompletion}
-                    onCheckedChange={(checked) =>
-                      setExecutionOptions({...executionOptions, notifyOnCompletion: checked === true})
-                    }
-                  />
-                  <label htmlFor="notify-completion" className="text-sm cursor-pointer">
-                    Notify when task completes
-                  </label>
-                </div>
-              </div>
-            </>
+              <h3 className="text-lg font-medium mb-2">Advanced Features Coming Soon</h3>
+              <p className="text-vscode-descriptionForeground mb-6">
+                The advanced task settings are currently under development.
+                <br />
+                Please use the Basic and Tasks tabs for now.
+              </p>
+              <Button 
+                variant="secondary" 
+                onClick={() => setActiveTab("basic")}
+                className="mt-2"
+              >
+                Go back to Basic tab
+              </Button>
+            </div>
           )}
         </div>
         
