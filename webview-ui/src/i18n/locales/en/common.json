@@ -5,7 +5,9 @@
 		"billion_suffix": "b"
 	},
 	"ui": {
-		"search_placeholder": "Search..."
+		"search_placeholder": "Search...",
+		"inbox": "Inbox",
+		"inbox_button_tooltip": "Open Inbox"
 	},
 	"mermaid": {
 		"loading": "Generating mermaid diagram...",

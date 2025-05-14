@@ -14,16 +14,19 @@ import SettingsView, { SettingsViewRef } from "./components/settings/SettingsVie
 import WelcomeView from "./components/welcome/WelcomeView"
 import McpView from "./components/mcp/McpView"
 import PromptsView from "./components/prompts/PromptsView"
+import InboxView, { InboxViewRef } from "./components/inbox/InboxView"
 import { HumanRelayDialog } from "./components/human-relay/HumanRelayDialog"
 
-type Tab = "settings" | "history" | "mcp" | "prompts" | "chat"
+type Tab = "settings" | "history" | "mcp" | "prompts" | "chat" | "inbox"
 
-const tabsByMessageAction: Partial<Record<NonNullable<ExtensionMessage["action"]>, Tab>> = {
+// Use a more flexible approach to allow for the "inboxButtonClicked" action
+const tabsByMessageAction: Record<string, Tab> = {
 	chatButtonClicked: "chat",
 	settingsButtonClicked: "settings",
 	promptsButtonClicked: "prompts",
 	mcpButtonClicked: "mcp",
 	historyButtonClicked: "history",
+	inboxButtonClicked: "inbox",
 }
 
 const App = () => {
@@ -45,6 +48,7 @@ const App = () => {
 
 	const settingsRef = useRef<SettingsViewRef>(null)
 	const chatViewRef = useRef<ChatViewRef>(null)
+	const inboxViewRef = useRef<InboxViewRef>(null)
 
 	const switchTab = useCallback((newTab: Tab) => {
 		setCurrentSection(undefined)
@@ -78,7 +82,11 @@ const App = () => {
 			}
 
 			if (message.type === "acceptInput") {
-				chatViewRef.current?.acceptInput()
+				if (tab === "inbox") {
+					inboxViewRef.current?.acceptInput()
+				} else {
+					chatViewRef.current?.acceptInput()
+				}
 			}
 		},
 		[switchTab],
@@ -121,6 +129,12 @@ const App = () => {
 			<ChatView
 				ref={chatViewRef}
 				isHidden={tab !== "chat"}
+				showAnnouncement={showAnnouncement}
+				hideAnnouncement={() => setShowAnnouncement(false)}
+			/>
+			<InboxView
+				ref={inboxViewRef}
+				isHidden={tab !== "inbox"}
 				showAnnouncement={showAnnouncement}
 				hideAnnouncement={() => setShowAnnouncement(false)}
 			/>

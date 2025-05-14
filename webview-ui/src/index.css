@@ -421,3 +421,37 @@ input[cmdk-input]:focus {
 a:focus {
 	outline: 1px solid var(--vscode-focusBorder);
 }
+
+/**
+ * Custom scrollbar styling for inbox welcome view
+ */
+
+.welcome-scrollable-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.welcome-scrollable-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.welcome-scrollable-container::-webkit-scrollbar-thumb {
+  background-color: var(--vscode-scrollbarSlider-background);
+  border-radius: 4px;
+}
+
+.welcome-scrollable-container::-webkit-scrollbar-thumb:hover {
+  background-color: var(--vscode-scrollbarSlider-hoverBackground);
+}
+
+.welcome-scrollable-container::-webkit-scrollbar-thumb:active {
+  background-color: var(--vscode-scrollbarSlider-activeBackground);
+}
+
+/* Scroll shadow styling for inbox welcome view */
+.scroll-shadow-top {
+  opacity: 0;
+}
+
+.scroll-shadow-bottom {
+  opacity: 0;
+}

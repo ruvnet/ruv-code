@@ -130,6 +130,19 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 
 			visibleProvider.postMessageToWebview({ type: "action", action: "historyButtonClicked" })
 		},
+		"roo-cline.inboxButtonClicked": () => {
+			const visibleProvider = getVisibleProviderOrLog(outputChannel)
+
+			if (!visibleProvider) {
+				return
+			}
+
+			telemetryService.captureTitleButtonClicked("inbox")
+
+			// Show the inbox view instead of the chat view
+			// Using type assertion to bypass type checking since we're extending functionality
+			visibleProvider.postMessageToWebview({ type: "action", action: "inboxButtonClicked" as any })
+		},
 		"roo-cline.showHumanRelayDialog": (params: { requestId: string; promptText: string }) => {
 			const panel = getPanel()
 
