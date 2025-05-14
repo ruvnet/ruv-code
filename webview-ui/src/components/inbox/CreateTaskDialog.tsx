@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { getAllModes } from "@roo/shared/modes"
-import { TaskState } from "./InboxSidebar"
+import { TaskState } from "./types"
 import AdvancedTab from "./AdvancedTab"
 import {
   Dialog,

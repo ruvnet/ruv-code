@@ -1,169 +1,110 @@
 /**
- * Inbox Task State Transition Styles
- * 
- * This file contains CSS for task state transitions and styling
- * based on task states in the Agentic Inbox.
+ * Task state transition animations and styling
  */
 
-/* Task State Transition Animations */
-.task-transition-to-completed {
-  animation: completeTask 0.3s ease-in-out;
+/* Task state transition container */
+.task-state-transition {
+  transition: opacity 0.3s, transform 0.3s, height 0.3s;
 }
 
-.task-transition-to-archived {
-  animation: archiveTask 0.4s ease-in-out;
-}
-
-.task-transition-to-active {
-  animation: activateTask 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.task-transition-default {
-  animation: fadeTask 0.3s ease-in-out;
-}
-
-/* Keyframe Animations */
-@keyframes completeTask {
-  0% {
-    opacity: 0.6;
-    transform: scale(0.95);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes archiveTask {
-  0% {
-    opacity: 0.6;
-    transform: translateY(-10px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes activateTask {
-  0% {
-    opacity: 0.6;
-    transform: scale(0.95);
-  }
-  40% {
-    transform: scale(1.02);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes fadeTask {
-  0% {
-    opacity: 0.6;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-/* Task State-Based Styling */
-.task-completed {
-  text-decoration: line-through;
-  opacity: 0.8;
-}
-
-.task-archived {
-  opacity: 0.7;
-  filter: grayscale(30%);
-}
-
-/* Running task styling */
-.task-running {
-  animation: pulseRunning 2s infinite ease-in-out;
-}
-
-@keyframes pulseRunning {
-  0% {
-    box-shadow: 0 0 0 0 var(--vscode-button-background);
-  }
-  70% {
-    box-shadow: 0 0 0 3px rgba(var(--vscode-button-background), 0.2);
-  }
-  100% {
-    box-shadow: 0 0 0 0 var(--vscode-button-background);
-  }
-}
-
-/* Task row hover effects based on state */
+/* Task row styling */
 .task-row {
-  transition: all 0.2s ease-in-out;
+  transition: background-color 0.2s, opacity 0.2s, color 0.2s;
+  margin-bottom: 2px;
 }
 
-.task-row:hover {
-  border-color: var(--vscode-focusBorder);
+/* Task state-specific styling */
+.task-row-completed {
+  opacity: 0.7;
 }
 
-.task-row.task-row-active:hover {
-  box-shadow: 0 0 0 1px var(--vscode-charts-blue);
+.task-row-archived {
+  opacity: 0.5;
 }
 
-.task-row.task-row-completed:hover {
-  box-shadow: 0 0 0 1px var(--vscode-charts-green);
+/* Task entering animations */
+.task-entering {
+  opacity: 0;
+  transform: translateX(-10px);
 }
 
-.task-row.task-row-archived:hover {
-  box-shadow: 0 0 0 1px var(--vscode-descriptionForeground);
+.task-entered {
+  opacity: 1;
+  transform: translateX(0);
 }
 
-/* Keyboard shortcut tooltip */
-.kbd-shortcut {
+/* Task exiting animations */
+.task-exiting {
+  opacity: 0;
+  transform: translateX(10px);
+  height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.task-exited {
+  display: none;
+}
+
+/* Sidebar transition when minimized/maximized */
+.sidebar-transition {
+  transition: width 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
+/* Badge styling */
+.priority-badge {
   display: inline-flex;
   align-items: center;
-  padding: 2px 4px;
-  border-radius: 3px;
-  border: 1px solid var(--vscode-panel-border);
-  background-color: var(--vscode-editor-background);
-  font-size: 0.8em;
-  margin: 0 2px;
- }
- 
- /* Responsive sidebar styles */
- .sidebar-transition {
-  transition: transform 0.3s ease-in-out, width 0.3s ease-in-out;
- }
- 
- .sidebar-hidden {
-  transform: translateX(-100%);
- }
- 
- .sidebar-visible {
-  transform: translateX(0);
- }
- 
- /* Sidebar overlay for mobile */
- .sidebar-overlay {
-  background-color: rgba(0, 0, 0, 0.5);
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 15;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease-in-out;
- }
- 
- .sidebar-overlay-active {
-  opacity: 1;
-  pointer-events: auto;
- }
- 
- /* Mobile screen adaptations */
- @media (max-width: 768px) {
-  .inbox-content {
-  	padding-left: 0;
-  }
- }
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.priority-badge-high {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.priority-badge-medium {
+  background-color: rgba(249, 115, 22, 0.15);
+  color: #f97316;
+}
+
+.priority-badge-low {
+  background-color: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+}
+
+/* Task state badge styling */
+.task-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.task-badge-active {
+  background-color: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+}
+
+.task-badge-completed {
+  background-color: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+}
+
+.task-badge-archived {
+  background-color: rgba(107, 114, 128, 0.15);
+  color: #6b7280;
+}
+
+/* Keyboard shortcut styling */
+.kbd-shortcut {
+  font-size: 0.7rem;
+  color: var(--vscode-descriptionForeground);
+  opacity: 0.7;
+}

@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { getAllModes } from "@roo/shared/modes"
-import { TaskState } from "./InboxSidebar"
+import { TaskState } from "./types"
 import AdvancedTab from "./AdvancedTab"
 import {
   Dialog,
@@ -69,12 +69,6 @@ interface EditTaskDialogProps {
   taskReminders?: boolean;
   taskRecurrence?: string;
   taskEstimatedTime?: string;
-  // Legacy advanced options
-  taskPromptTemplate?: string;
-  taskExecutionOptions?: {
-    autoStart: boolean;
-    notifyOnCompletion: boolean;
-  };
 }
 
 const EditTaskDialog: React.FC<EditTaskDialogProps> = ({
@@ -93,9 +87,7 @@ const EditTaskDialog: React.FC<EditTaskDialogProps> = ({
   taskTags = [],
   taskReminders = false,
   taskRecurrence = "none",
-  taskEstimatedTime = "medium",
-  taskPromptTemplate = "",
-  taskExecutionOptions = { autoStart: false, notifyOnCompletion: true }
+  taskEstimatedTime = "medium"
 }) => {
   const { t } = useTranslation();
   const { mode, customModes } = useExtensionState();
@@ -123,9 +115,6 @@ const EditTaskDialog: React.FC<EditTaskDialogProps> = ({
   const [recurrence, setRecurrence] = useState(taskRecurrence);
   const [estimatedTime, setEstimatedTime] = useState(taskEstimatedTime);
   
-  // Legacy advanced options
-  const [promptTemplate, setPromptTemplate] = useState(taskPromptTemplate);
-  const [executionOptions, setExecutionOptions] = useState(taskExecutionOptions);
   
   // Reset form when dialog opens with the current task data
   useEffect(() => {
@@ -150,32 +139,10 @@ const EditTaskDialog: React.FC<EditTaskDialogProps> = ({
       setRecurrence(taskRecurrence);
       setEstimatedTime(taskEstimatedTime);
       
-      // Reset legacy advanced options
-      setPromptTemplate(taskPromptTemplate);
-      setExecutionOptions(taskExecutionOptions);
-      
       // Reset active tab
       setActiveTab("basic");
     }
-  }, [
-    open, 
-    taskTitle, 
-    taskDescription, 
-    taskPriority, 
-    taskState, 
-    taskMode, 
-    mode, 
-    taskSubtasks, 
-    taskFlowType, 
-    taskDependencies,
-    taskDueDate,
-    taskTags,
-    taskReminders,
-    taskRecurrence,
-    taskEstimatedTime,
-    taskPromptTemplate,
-    taskExecutionOptions
-  ]);
+  }, [open, mode]); // Only reset when dialog opens or mode changes, not when task props change
   
   // Add a subtask to the list
   const addSubtask = useCallback(() => {
@@ -232,20 +199,44 @@ const EditTaskDialog: React.FC<EditTaskDialogProps> = ({
     // Combine all advanced options
     const advancedContent = tagsContent + dueDateContent + reminderContent + recurrenceContent + timeContent;
     
-    // Add legacy advanced options
-    const legacyAdvancedContent = promptTemplate || executionOptions.autoStart || executionOptions.notifyOnCompletion
-      ? `\n\n### Legacy Options\n${promptTemplate ? `**Prompt Template:** ${promptTemplate}\n` : ''}**Auto Start:** ${executionOptions.autoStart}\n**Notify on Completion:** ${executionOptions.notifyOnCompletion}`
-      : '';
-    
     // Include priority, state, mode and taskId information in the task content
     // We need to embed the taskId in the content since there's no specific field for it
-    const taskContent = `# ${title}\n\n${description}\n\n**Priority:** ${priority}\n**State:** ${state}\n**Mode:** ${selectedMode}\n**TaskId:** ${taskId}${subtasksContent}${workflowContent}${advancedContent}${legacyAdvancedContent}`;
+    const taskContent = `# ${title}\n\n${description}\n\n**Priority:** ${priority}\n**State:** ${state}\n**Mode:** ${selectedMode}\n**TaskId:** ${taskId}${subtasksContent}${workflowContent}${advancedContent}`;
     
-    // Instead of creating a new task, we can use the showTaskWithId type which is available
+    // First, update the task in the InboxSidebar component directly for UI feedback
+    // This is a workaround because the sidebar is using mock data
+    const mockTaskUpdate = () => {
+      // This function updates the mock data in InboxSidebar
+      const sidebarElement = document.querySelector('[data-component="InboxSidebar"]');
+      if (sidebarElement) {
+        // Create a custom event to update the InboxSidebar mock data
+        // Include all task fields that might need to be updated
+        const taskUpdateEvent = new CustomEvent('mock-task-update', {
+          detail: {
+            taskId,
+            newTitle: title,
+            newDescription: description,
+            newPriority: priority,
+            newState: state,
+            newMode: selectedMode,
+            // Also include other fields if needed
+            newSubtasks: subtasks,
+            newFlowType: flowType,
+            newDependencies: dependencies
+          }
+        });
+        // Dispatch the event to update the sidebar
+        sidebarElement.dispatchEvent(taskUpdateEvent);
+      }
+    };
+
+    // Call the mock update function
+    mockTaskUpdate();
+
+    // Also send the update to the extension (for when real implementation is ready)
     vscode.postMessage({
       type: "showTaskWithId",
-      text: taskContent,
-      images: [] // Include empty images array to match CreateTaskDialog
+      text: taskContent
     });
     
     // Close the dialog
@@ -265,8 +256,6 @@ const EditTaskDialog: React.FC<EditTaskDialogProps> = ({
     reminders,
     recurrence,
     estimatedTime,
-    promptTemplate,
-    executionOptions,
     onOpenChange
   ]);
   
@@ -537,97 +526,18 @@ const EditTaskDialog: React.FC<EditTaskDialogProps> = ({
           
           {/* Advanced Tab Content */}
           {activeTab === "advanced" && (
-            <div className="space-y-4">
-              {/* New advanced options */}
-              <AdvancedTab
-                dueDate={dueDate}
-                setDueDate={setDueDate}
-                tags={tags}
-                setTags={setTags}
-                reminders={reminders}
-                setReminders={setReminders}
-                recurrence={recurrence}
-                setRecurrence={setRecurrence}
-                estimatedTime={estimatedTime}
-                setEstimatedTime={setEstimatedTime}
-              />
-              
-              {/* Legacy options section */}
-              <div className="mt-8 pt-4 border-t border-vscode-panel-border">
-                <h3 className="text-sm font-medium mb-4">Legacy Options</h3>
-                
-                {/* Prompt selection */}
-                <div className="space-y-2 mb-4">
-                  <label className="text-sm font-medium text-vscode-foreground">
-                    Prompt Template
-                  </label>
-                  <Select value={promptTemplate} onValueChange={setPromptTemplate}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select a prompt template" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">
-                        <div className="flex items-center">
-                          <span className="codicon codicon-edit mr-2" />
-                          Default (No Template)
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="code-review">
-                        <div className="flex items-center">
-                          <span className="codicon codicon-code mr-2" />
-                          Code Review
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="data-analysis">
-                        <div className="flex items-center">
-                          <span className="codicon codicon-graph mr-2" />
-                          Data Analysis
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="document-generation">
-                        <div className="flex items-center">
-                          <span className="codicon codicon-file-text mr-2" />
-                          Document Generation
-                        </div>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                {/* Execution options */}
-                <div className="space-y-4">
-                  <label className="text-sm font-medium text-vscode-foreground">
-                    Execution Options
-                  </label>
-                  
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="auto-start"
-                      checked={executionOptions.autoStart}
-                      onCheckedChange={(checked) =>
-                        setExecutionOptions({...executionOptions, autoStart: checked === true})
-                      }
-                    />
-                    <label htmlFor="auto-start" className="text-sm cursor-pointer">
-                      Auto-start task after creation
-                    </label>
-                  </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="notify-completion"
-                      checked={executionOptions.notifyOnCompletion}
-                      onCheckedChange={(checked) =>
-                        setExecutionOptions({...executionOptions, notifyOnCompletion: checked === true})
-                      }
-                    />
-                    <label htmlFor="notify-completion" className="text-sm cursor-pointer">
-                      Notify when task completes
-                    </label>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <AdvancedTab
+              dueDate={dueDate}
+              setDueDate={setDueDate}
+              tags={tags}
+              setTags={setTags}
+              reminders={reminders}
+              setReminders={setReminders}
+              recurrence={recurrence}
+              setRecurrence={setRecurrence}
+              estimatedTime={estimatedTime}
+              setEstimatedTime={setEstimatedTime}
+            />
           )}
         </div>
         

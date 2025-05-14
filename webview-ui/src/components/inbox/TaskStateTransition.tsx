@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { TaskState } from "./InboxSidebar";
+import React, { useState, useEffect } from "react";
+import { TaskState } from "./types";
 
 interface TaskStateTransitionProps {
   taskState: TaskState;
@@ -10,57 +10,48 @@ interface TaskStateTransitionProps {
 /**
  * TaskStateTransition Component
  * 
- * This component adds smooth CSS animations when a task changes state.
- * It wraps child components with appropriate transition classes based on the task state.
- * 
- * @param taskState The current state of the task
- * @param children The child components to animate
- * @param className Additional CSS classes to apply
+ * Provides animated transitions between task states
  */
 const TaskStateTransition: React.FC<TaskStateTransitionProps> = ({
   taskState,
   children,
-  className = "",
+  className = ""
 }) => {
-  // Keep track of previous state to determine animation
-  const [prevState, setPrevState] = useState<TaskState>(taskState);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [transitionClass, setTransitionClass] = useState("");
+  const [animationState, setAnimationState] = useState<
+    "entering" | "entered" | "exiting" | "exited"
+  >("entered");
   
+  const [prevState, setPrevState] = useState<TaskState>(taskState);
+  
+  // Handle state changes with animations
   useEffect(() => {
-    // Only animate if the state changes
-    if (prevState !== taskState) {
-      // Set the appropriate transition class based on state change
-      if (prevState === "active" && taskState === "completed") {
-        setTransitionClass("task-transition-to-completed");
-      } else if (prevState === "active" && taskState === "archived") {
-        setTransitionClass("task-transition-to-archived");
-      } else if (taskState === "active") {
-        setTransitionClass("task-transition-to-active");
-      } else {
-        setTransitionClass("task-transition-default");
-      }
+    if (taskState !== prevState) {
+      // Exit animation
+      setAnimationState("exiting");
       
-      setIsAnimating(true);
-      setPrevState(taskState);
-      
-      // Reset animating flag after animation completes
+      // After exit animation, update state and start enter animation
       const timer = setTimeout(() => {
-        setIsAnimating(false);
-        setTransitionClass("");
-      }, 500);
+        setPrevState(taskState);
+        setAnimationState("entering");
+        
+        // After enter animation starts, mark as entered
+        const enterTimer = setTimeout(() => {
+          setAnimationState("entered");
+        }, 300); // Match the CSS transition duration
+        
+        return () => clearTimeout(enterTimer);
+      }, 300); // Match the CSS transition duration
+      
       return () => clearTimeout(timer);
     }
   }, [taskState, prevState]);
-
+  
   return (
-    <div 
+    <div
       className={`
-        transition-all duration-300
+        task-state-transition
+        task-${animationState}
         ${className}
-        ${isAnimating ? transitionClass : ""}
-        ${taskState === "completed" ? "task-completed" : ""}
-        ${taskState === "archived" ? "task-archived" : ""}
       `}
     >
       {children}
